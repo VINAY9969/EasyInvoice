@@ -25,9 +25,7 @@
             border-bottom: 1px dashed #d1d5db;
             background: transparent;
             padding: 0;
-        }
-        input:hover, textarea:hover, [contenteditable]:hover {
-            border-bottom: 1px solid #9ca3af;
+            cursor: pointer;
         }
         input:focus, textarea:focus, [contenteditable]:focus {
             border-bottom: 1px solid #1e40af;
@@ -48,6 +46,25 @@
             body {
                 background: #fff;
             }
+            .page-break {
+                page-break-after: always;
+            }
+            /* Hide the roundoff row on print unless the checkbox is checked */
+            .print-hide-roundoff {
+                display: none !important;
+            }
+        }
+        .spinner {
+            border: 2px solid rgba(0, 0, 0, 0.1);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border-left-color: #000;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -57,14 +74,12 @@
         <!-- Header -->
         <header class="flex flex-col sm:flex-row justify-between items-center mb-10">
             <div class="flex items-center space-x-4">
-                <img src="https://placehold.co/80x80/2563eb/ffffff?text=LOGO" alt="Business Logo" class="w-20 h-20 rounded-full">
-                <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">TAX INVOICE</h1>
+                <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">TAX INVOICE</h1>
             </div>
             <div class="text-sm text-right mt-4 sm:mt-0">
                 <p>Invoice No: <span id="invoice-no" contenteditable="true" class="font-bold text-blue-700">INV-001</span></p>
                 <p>Date: <span id="invoice-date" contenteditable="true" class="font-bold text-blue-700">14/08/2024</span></p>
-                <p>Place of Supply: <span contenteditable="true">New Delhi</span></p>
-                <p>Due Date: <span contenteditable="true">21/08/2024</span></p>
+                <p>Placeholder: <input type="text" placeholder="e.g. Haryana" class="font-bold w-28 text-blue-700 text-right"></p>
             </div>
         </header>
 
@@ -74,7 +89,7 @@
             <div>
                 <h2 class="text-lg font-bold text-gray-700 mb-2">Seller (Supplier Details)</h2>
                 <div class="border rounded-lg p-4 bg-gray-50 text-sm">
-                    <p class="font-bold text-lg mb-1" contenteditable="true">Your Business Name</p>
+                    <p class="font-bold text-lg mb-1" id="business-name" contenteditable="true">Your Business Name</p>
                     <p>GSTIN: <span contenteditable="true" class="text-gray-600">27AASCA2490A1Z1</span></p>
                     <p>Address: <span contenteditable="true" class="text-gray-600">123 Business Lane, City, State - 110001</span></p>
                     <p>Phone: <span contenteditable="true" class="text-gray-600">+91 9876543210</span></p>
@@ -95,7 +110,7 @@
         </div>
 
         <!-- Items Table -->
-        <div class="overflow-x-auto mb-10">
+        <div class="overflow-x-auto mb-4">
             <table class="min-w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-gray-100 text-gray-600 text-xs font-semibold uppercase tracking-wider">
@@ -105,48 +120,22 @@
                         <th class="p-3 border-b-2 text-right">Qty</th>
                         <th class="p-3 border-b-2 text-right">Rate (₹)</th>
                         <th class="p-3 border-b-2 text-right">Taxable Value (₹)</th>
-                        <th class="p-3 border-b-2 text-right">GST Rate (%)</th>
-                        <th class="p-3 border-b-2 text-right">CGST (₹)</th>
-                        <th class="p-3 border-b-2 text-right">SGST (₹)</th>
-                        <th class="p-3 border-b-2 text-right">IGST (₹)</th>
-                        <th class="p-3 border-b-2 text-right">Cess (₹)</th>
+                        <th class="p-3 border-b-2 text-right">CGST (%)</th>
+                        <th class="p-3 border-b-2 text-right">SGST (%)</th>
+                        <th class="p-3 border-b-2 text-right">IGST (%)</th>
+                        <th class="p-3 border-b-2 text-right">Cess (%)</th>
                         <th class="p-3 border-b-2 text-right">Total (₹)</th>
+                        <th class="p-3 border-b-2 no-print"></th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Item Row 1 -->
-                    <tr class="border-b text-sm">
-                        <td class="p-3">1</td>
-                        <td class="p-3" contenteditable="true">Product A</td>
-                        <td class="p-3 text-center" contenteditable="true">8517</td>
-                        <td class="p-3 text-right" contenteditable="true">1</td>
-                        <td class="p-3 text-right" contenteditable="true">100.00</td>
-                        <td class="p-3 text-right" contenteditable="true">100.00</td>
-                        <td class="p-3 text-right" contenteditable="true">18</td>
-                        <td class="p-3 text-right" contenteditable="true">9.00</td>
-                        <td class="p-3 text-right" contenteditable="true">9.00</td>
-                        <td class="p-3 text-right" contenteditable="true">0.00</td>
-                        <td class="p-3 text-right" contenteditable="true">0.00</td>
-                        <td class="p-3 text-right" contenteditable="true">118.00</td>
-                    </tr>
-                    <!-- Item Row 2 -->
-                    <tr class="border-b text-sm">
-                        <td class="p-3" contenteditable="true">2</td>
-                        <td class="p-3" contenteditable="true">Service B</td>
-                        <td class="p-3 text-center" contenteditable="true">9983</td>
-                        <td class="p-3 text-right" contenteditable="true">5</td>
-                        <td class="p-3 text-right" contenteditable="true">25.00</td>
-                        <td class="p-3 text-right" contenteditable="true">125.00</td>
-                        <td class="p-3 text-right" contenteditable="true">18</td>
-                        <td class="p-3 text-right" contenteditable="true">11.25</td>
-                        <td class="p-3 text-right" contenteditable="true">11.25</td>
-                        <td class="p-3 text-right" contenteditable="true">0.00</td>
-                        <td class="p-3 text-right" contenteditable="true">0.00</td>
-                        <td class="p-3 text-right" contenteditable="true">147.50</td>
-                    </tr>
-                    <!-- Add more rows as needed by copying the 'tr' block -->
+                <tbody id="invoice-items-container">
+                    <!-- Dynamic rows will be added here -->
                 </tbody>
             </table>
+        </div>
+
+        <div class="no-print mb-8">
+            <button id="add-item-btn" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg shadow hover:bg-blue-700 transition-colors">Add Item</button>
         </div>
 
         <!-- Totals & Summary -->
@@ -154,38 +143,42 @@
             <div class="w-full sm:w-1/2">
                 <div class="flex justify-between text-sm py-1">
                     <span class="text-gray-600">Subtotal:</span>
-                    <span contenteditable="true">₹ 225.00</span>
+                    <span id="subtotal-amount" class="font-bold">₹ 0.00</span>
                 </div>
                 <div class="flex justify-between text-sm py-1">
                     <span class="text-gray-600">Total CGST:</span>
-                    <span contenteditable="true">₹ 20.25</span>
+                    <span id="total-cgst-amount" class="font-bold">₹ 0.00</span>
                 </div>
                 <div class="flex justify-between text-sm py-1">
                     <span class="text-gray-600">Total SGST:</span>
-                    <span contenteditable="true">₹ 20.25</span>
+                    <span id="total-sgst-amount" class="font-bold">₹ 0.00</span>
                 </div>
                 <div class="flex justify-between text-sm py-1">
                     <span class="text-gray-600">Total IGST:</span>
-                    <span contenteditable="true">₹ 0.00</span>
+                    <span id="total-igst-amount" class="font-bold">₹ 0.00</span>
                 </div>
                 <div class="flex justify-between text-sm py-1">
                     <span class="text-gray-600">Total Cess:</span>
-                    <span contenteditable="true">₹ 0.00</span>
+                    <span id="total-cess-amount" class="font-bold">₹ 0.00</span>
                 </div>
-                <div class="flex justify-between text-sm py-1 border-t border-dashed mt-2 pt-2">
-                    <span class="text-gray-600">Round Off:</span>
-                    <span contenteditable="true">₹ 0.00</span>
+                <!-- Round off row is now always visible on screen, but controlled for print -->
+                <div id="roundoff-row" class="flex justify-between text-sm py-1 border-t border-dashed mt-2 pt-2 items-center">
+                    <label class="text-gray-600 flex items-center">
+                        Round Off
+                        <input type="checkbox" id="roundoff-checkbox" class="ml-2">
+                    </label>
+                    <span id="roundoff-amount" class="font-bold">₹ 0.00</span>
                 </div>
                 <div class="flex justify-between font-bold text-xl mt-4 pt-4 border-t-2 border-gray-400">
                     <span>Grand Total:</span>
-                    <span id="grand-total-amount" contenteditable="true" class="text-blue-800">₹ 265.50</span>
+                    <span id="grand-total-amount" class="text-blue-800">₹ 0.00</span>
                 </div>
             </div>
         </div>
 
         <!-- Amount in Words -->
         <div class="mb-8">
-            <p class="text-sm">Amount in Words: <span id="amount-in-words" contenteditable="true" class="font-bold">Rupees Two Hundred Sixty-Five and Fifty Paise Only</span></p>
+            <p class="text-sm">Amount in Words: <span id="amount-in-words" class="font-bold italic">Rupees Zero Only</span></p>
         </div>
 
         <!-- Bank Details & Declaration -->
@@ -221,5 +214,206 @@
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const invoiceItemsContainer = document.getElementById('invoice-items-container');
+            const addItemBtn = document.getElementById('add-item-btn');
+            const subtotalAmountSpan = document.getElementById('subtotal-amount');
+            const totalCgstAmountSpan = document.getElementById('total-cgst-amount');
+            const totalSgstAmountSpan = document.getElementById('total-sgst-amount');
+            const totalIgstAmountSpan = document.getElementById('total-igst-amount');
+            const totalCessAmountSpan = document.getElementById('total-cess-amount');
+            const grandTotalAmountSpan = document.getElementById('grand-total-amount');
+            const amountInWordsSpan = document.getElementById('amount-in-words');
+            const roundoffCheckbox = document.getElementById('roundoff-checkbox');
+            const roundoffAmountSpan = document.getElementById('roundoff-amount');
+            const roundoffRow = document.getElementById('roundoff-row');
+            
+            function toWords(num) {
+                const a = ['', 'one ', 'two ', 'three ', 'four ', 'five ', 'six ', 'seven ', 'eight ', 'nine ', 'ten ', 'eleven ', 'twelve ', 'thirteen ', 'fourteen ', 'fifteen ', 'sixteen ', 'seventeen ', 'eighteen ', 'nineteen '];
+                const b = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+                const regex = /^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/;
+
+                function inRs(n) {
+                    if ((n = n.toString()).length > 9) return 'overflow';
+                    let n2 = ('000000000' + n).substr(-9).match(regex);
+                    if (!n2) return 'invalid number';
+                    let str = '';
+                    str += (n2[1] != 0) ? (a[Number(n2[1])] || b[n2[1][0]] + ' ' + a[n2[1][1]]) + 'crore ' : '';
+                    str += (n2[2] != 0) ? (a[Number(n2[2])] || b[n2[2][0]] + ' ' + a[n2[2][1]]) + 'lakh ' : '';
+                    str += (n2[3] != 0) ? (a[Number(n2[3])] || b[n2[3][0]] + ' ' + a[n2[3][1]]) + 'thousand ' : '';
+                    str += (n2[4] != 0) ? (a[Number(n2[4])] || b[n2[4][0]] + ' ' + a[n2[4][1]]) + 'hundred ' : '';
+                    str += (n2[5] != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n2[5])] || b[n2[5][0]] + ' ' + a[n2[5][1]]) : '';
+                    return str;
+                }
+
+                let wholePart = Math.floor(num);
+                let decimalPart = Math.round((num - wholePart) * 100);
+                
+                let wholeWords = inRs(wholePart);
+                let decimalWords = inRs(decimalPart);
+
+                let result = '';
+                if (wholePart > 0) {
+                    result += 'Rupees ' + wholeWords.trim() + ' ';
+                }
+                if (decimalPart > 0) {
+                    result += 'and ' + decimalWords.trim() + 'Paise';
+                }
+                
+                return result.trim() + ' Only';
+            }
+
+            function updateAllTotals() {
+                let subtotal = 0;
+                let totalCgst = 0;
+                let totalSgst = 0;
+                let totalIgst = 0;
+                let totalCess = 0;
+                
+                document.querySelectorAll('#invoice-items-container tr').forEach(row => {
+                    const taxableValue = parseFloat(row.querySelector('[data-taxable-value]').textContent) || 0;
+                    
+                    const cgstRate = parseFloat(row.querySelector('[data-cgst-input]').value) || 0;
+                    const sgstRate = parseFloat(row.querySelector('[data-sgst-input]').value) || 0;
+                    const igstRate = parseFloat(row.querySelector('[data-igst-input]').value) || 0;
+                    const cessRate = parseFloat(row.querySelector('[data-cess-input]').value) || 0;
+
+                    const cgst = (taxableValue * cgstRate) / 100;
+                    const sgst = (taxableValue * sgstRate) / 100;
+                    const igst = (taxableValue * igstRate) / 100;
+                    const cess = (taxableValue * cessRate) / 100;
+
+                    subtotal += taxableValue;
+                    totalCgst += cgst;
+                    totalSgst += sgst;
+                    totalIgst += igst;
+                    totalCess += cess;
+                });
+
+                const rawGrandTotal = subtotal + totalCgst + totalSgst + totalIgst + totalCess;
+                let roundoff = 0;
+
+                // Toggle a class for print visibility based on checkbox state
+                if (roundoffCheckbox.checked) {
+                    roundoffRow.classList.remove('print-hide-roundoff');
+                    const roundedTotal = Math.round(rawGrandTotal);
+                    roundoff = roundedTotal - rawGrandTotal;
+                } else {
+                    roundoffRow.classList.add('print-hide-roundoff');
+                }
+                
+                const grandTotal = rawGrandTotal + roundoff;
+
+                subtotalAmountSpan.textContent = `₹ ${subtotal.toFixed(2)}`;
+                totalCgstAmountSpan.textContent = `₹ ${totalCgst.toFixed(2)}`;
+                totalSgstAmountSpan.textContent = `₹ ${totalSgst.toFixed(2)}`;
+                totalIgstAmountSpan.textContent = `₹ ${totalIgst.toFixed(2)}`;
+                totalCessAmountSpan.textContent = `₹ ${totalCess.toFixed(2)}`;
+                roundoffAmountSpan.textContent = `₹ ${roundoff.toFixed(2)}`;
+                grandTotalAmountSpan.textContent = `₹ ${grandTotal.toFixed(2)}`;
+                amountInWordsSpan.textContent = toWords(grandTotal);
+            }
+
+            function addItem(isInitial = false) {
+                const newRow = document.createElement('tr');
+                newRow.className = "border-b text-sm";
+                newRow.innerHTML = `
+                    <td class="p-3">
+                        <span class="serial-no">${invoiceItemsContainer.children.length + 1}</span>
+                    </td>
+                    <td class="p-3">
+                        <span contenteditable="true">Item Description</span>
+                    </td>
+                    <td class="p-3 text-center">
+                        <span contenteditable="true">HSN/SAC</span>
+                    </td>
+                    <td class="p-3 text-right">
+                        <input type="number" value="1" min="1" class="qty w-12 text-right">
+                    </td>
+                    <td class="p-3 text-right">
+                        <input type="number" value="0.00" min="0" step="0.01" class="rate w-20 text-right">
+                    </td>
+                    <td class="p-3 text-right">
+                        <span data-taxable-value>0.00</span>
+                    </td>
+                    <td class="p-3 text-right">
+                        <input type="number" value="0.00" step="0.01" class="w-12 text-right" data-cgst-input>
+                    </td>
+                    <td class="p-3 text-right">
+                        <input type="number" value="0.00" step="0.01" class="w-12 text-right" data-sgst-input>
+                    </td>
+                    <td class="p-3 text-right">
+                        <input type="number" value="0.00" step="0.01" class="w-12 text-right" data-igst-input>
+                    </td>
+                    <td class="p-3 text-right">
+                        <input type="number" value="0.00" step="0.01" class="w-12 text-right" data-cess-input>
+                    </td>
+                    <td class="p-3 text-right font-semibold">
+                        <span data-total-value>0.00</span>
+                    </td>
+                    <td class="p-3 text-center no-print">
+                        <button class="remove-item-btn text-red-500 hover:text-red-700 transition-colors">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd"></path></svg>
+                        </button>
+                    </td>
+                `;
+                
+                invoiceItemsContainer.appendChild(newRow);
+
+                const qtyInput = newRow.querySelector('.qty');
+                const rateInput = newRow.querySelector('.rate');
+                const cgstInput = newRow.querySelector('[data-cgst-input]');
+                const sgstInput = newRow.querySelector('[data-sgst-input]');
+                const igstInput = newRow.querySelector('[data-igst-input]');
+                const cessInput = newRow.querySelector('[data-cess-input]');
+                const removeBtn = newRow.querySelector('.remove-item-btn');
+
+                const updateRow = () => {
+                    const qty = parseFloat(qtyInput.value) || 0;
+                    const rate = parseFloat(rateInput.value) || 0;
+                    const cgstRate = parseFloat(cgstInput.value) || 0;
+                    const sgstRate = parseFloat(sgstInput.value) || 0;
+                    const igstRate = parseFloat(igstInput.value) || 0;
+                    const cessRate = parseFloat(cessInput.value) || 0;
+
+                    const taxableValue = qty * rate;
+                    const totalTax = (taxableValue * (cgstRate + sgstRate + igstRate + cessRate)) / 100;
+                    
+                    newRow.querySelector('[data-taxable-value]').textContent = taxableValue.toFixed(2);
+                    newRow.querySelector('[data-total-value]').textContent = (taxableValue + totalTax).toFixed(2);
+
+                    updateAllTotals();
+                };
+
+                qtyInput.addEventListener('input', updateRow);
+                rateInput.addEventListener('input', updateRow);
+                cgstInput.addEventListener('input', updateRow);
+                sgstInput.addEventListener('input', updateRow);
+                igstInput.addEventListener('input', updateRow);
+                cessInput.addEventListener('input', updateRow);
+
+                removeBtn.addEventListener('click', () => {
+                    newRow.remove();
+                    updateAllTotals();
+                    document.querySelectorAll('.serial-no').forEach((el, index) => {
+                        el.textContent = index + 1;
+                    });
+                });
+
+                updateRow();
+
+                if (!isInitial) {
+                    qtyInput.focus();
+                }
+            }
+
+            addItem(true);
+            addItemBtn.addEventListener('click', () => addItem(false));
+            roundoffCheckbox.addEventListener('change', updateAllTotals);
+            updateAllTotals(); // Initial call to set print visibility
+        });
+    </script>
 </body>
 </html>
