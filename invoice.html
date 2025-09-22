@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional GST Invoice Template</title>
+    <!-- Tailwind CSS CDN for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .invoice-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        input, textarea, [contenteditable] {
+            outline: none;
+            border-bottom: 1px dashed #d1d5db;
+            background: transparent;
+            padding: 0;
+        }
+        input:hover, textarea:hover, [contenteditable]:hover {
+            border-bottom: 1px solid #9ca3af;
+        }
+        input:focus, textarea:focus, [contenteditable]:focus {
+            border-bottom: 1px solid #1e40af;
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            .invoice-container {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+            }
+            input, textarea, [contenteditable] {
+                border-bottom: none !important;
+                background: none !important;
+            }
+            body {
+                background: #fff;
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="invoice-container">
+        <!-- Header -->
+        <header class="flex flex-col sm:flex-row justify-between items-center mb-10">
+            <div class="flex items-center space-x-4">
+                <img src="https://placehold.co/80x80/2563eb/ffffff?text=LOGO" alt="Business Logo" class="w-20 h-20 rounded-full">
+                <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">TAX INVOICE</h1>
+            </div>
+            <div class="text-sm text-right mt-4 sm:mt-0">
+                <p>Invoice No: <span id="invoice-no" contenteditable="true" class="font-bold text-blue-700">INV-001</span></p>
+                <p>Date: <span id="invoice-date" contenteditable="true" class="font-bold text-blue-700">14/08/2024</span></p>
+                <p>Place of Supply: <span contenteditable="true">New Delhi</span></p>
+                <p>Due Date: <span contenteditable="true">21/08/2024</span></p>
+            </div>
+        </header>
+
+        <!-- Seller & Buyer Details -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-10">
+            <!-- Seller Details (Supplier) -->
+            <div>
+                <h2 class="text-lg font-bold text-gray-700 mb-2">Seller (Supplier Details)</h2>
+                <div class="border rounded-lg p-4 bg-gray-50 text-sm">
+                    <p class="font-bold text-lg mb-1" contenteditable="true">Your Business Name</p>
+                    <p>GSTIN: <span contenteditable="true" class="text-gray-600">27AASCA2490A1Z1</span></p>
+                    <p>Address: <span contenteditable="true" class="text-gray-600">123 Business Lane, City, State - 110001</span></p>
+                    <p>Phone: <span contenteditable="true" class="text-gray-600">+91 9876543210</span></p>
+                    <p>Email: <span contenteditable="true" class="text-gray-600">info@yourbusiness.com</span></p>
+                </div>
+            </div>
+            <!-- Buyer Details (Receiver) -->
+            <div>
+                <h2 class="text-lg font-bold text-gray-700 mb-2">Buyer (Receiver Details)</h2>
+                <div class="border rounded-lg p-4 bg-gray-50 text-sm">
+                    <p class="font-bold text-lg mb-1" contenteditable="true">Client Business Name</p>
+                    <p>GSTIN: <span contenteditable="true" class="text-gray-600">07AAACR1234F1Z9</span></p>
+                    <p>Address: <span contenteditable="true" class="text-gray-600">456 Client Street, City, State - 201301</span></p>
+                    <p>Phone: <span contenteditable="true" class="text-gray-600">+91 9988776655</span></p>
+                    <p>Email: <span contenteditable="true" class="text-gray-600">client@example.com</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="overflow-x-auto mb-10">
+            <table class="min-w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-100 text-gray-600 text-xs font-semibold uppercase tracking-wider">
+                        <th class="p-3 border-b-2">S. No.</th>
+                        <th class="p-3 border-b-2">Item Description</th>
+                        <th class="p-3 border-b-2 text-center">HSN/SAC</th>
+                        <th class="p-3 border-b-2 text-right">Qty</th>
+                        <th class="p-3 border-b-2 text-right">Rate (₹)</th>
+                        <th class="p-3 border-b-2 text-right">Taxable Value (₹)</th>
+                        <th class="p-3 border-b-2 text-right">GST Rate (%)</th>
+                        <th class="p-3 border-b-2 text-right">CGST (₹)</th>
+                        <th class="p-3 border-b-2 text-right">SGST (₹)</th>
+                        <th class="p-3 border-b-2 text-right">IGST (₹)</th>
+                        <th class="p-3 border-b-2 text-right">Cess (₹)</th>
+                        <th class="p-3 border-b-2 text-right">Total (₹)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Item Row 1 -->
+                    <tr class="border-b text-sm">
+                        <td class="p-3">1</td>
+                        <td class="p-3" contenteditable="true">Product A</td>
+                        <td class="p-3 text-center" contenteditable="true">8517</td>
+                        <td class="p-3 text-right" contenteditable="true">1</td>
+                        <td class="p-3 text-right" contenteditable="true">100.00</td>
+                        <td class="p-3 text-right" contenteditable="true">100.00</td>
+                        <td class="p-3 text-right" contenteditable="true">18</td>
+                        <td class="p-3 text-right" contenteditable="true">9.00</td>
+                        <td class="p-3 text-right" contenteditable="true">9.00</td>
+                        <td class="p-3 text-right" contenteditable="true">0.00</td>
+                        <td class="p-3 text-right" contenteditable="true">0.00</td>
+                        <td class="p-3 text-right" contenteditable="true">118.00</td>
+                    </tr>
+                    <!-- Item Row 2 -->
+                    <tr class="border-b text-sm">
+                        <td class="p-3" contenteditable="true">2</td>
+                        <td class="p-3" contenteditable="true">Service B</td>
+                        <td class="p-3 text-center" contenteditable="true">9983</td>
+                        <td class="p-3 text-right" contenteditable="true">5</td>
+                        <td class="p-3 text-right" contenteditable="true">25.00</td>
+                        <td class="p-3 text-right" contenteditable="true">125.00</td>
+                        <td class="p-3 text-right" contenteditable="true">18</td>
+                        <td class="p-3 text-right" contenteditable="true">11.25</td>
+                        <td class="p-3 text-right" contenteditable="true">11.25</td>
+                        <td class="p-3 text-right" contenteditable="true">0.00</td>
+                        <td class="p-3 text-right" contenteditable="true">0.00</td>
+                        <td class="p-3 text-right" contenteditable="true">147.50</td>
+                    </tr>
+                    <!-- Add more rows as needed by copying the 'tr' block -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Totals & Summary -->
+        <div class="flex justify-end mb-8">
+            <div class="w-full sm:w-1/2">
+                <div class="flex justify-between text-sm py-1">
+                    <span class="text-gray-600">Subtotal:</span>
+                    <span contenteditable="true">₹ 225.00</span>
+                </div>
+                <div class="flex justify-between text-sm py-1">
+                    <span class="text-gray-600">Total CGST:</span>
+                    <span contenteditable="true">₹ 20.25</span>
+                </div>
+                <div class="flex justify-between text-sm py-1">
+                    <span class="text-gray-600">Total SGST:</span>
+                    <span contenteditable="true">₹ 20.25</span>
+                </div>
+                <div class="flex justify-between text-sm py-1">
+                    <span class="text-gray-600">Total IGST:</span>
+                    <span contenteditable="true">₹ 0.00</span>
+                </div>
+                <div class="flex justify-between text-sm py-1">
+                    <span class="text-gray-600">Total Cess:</span>
+                    <span contenteditable="true">₹ 0.00</span>
+                </div>
+                <div class="flex justify-between text-sm py-1 border-t border-dashed mt-2 pt-2">
+                    <span class="text-gray-600">Round Off:</span>
+                    <span contenteditable="true">₹ 0.00</span>
+                </div>
+                <div class="flex justify-between font-bold text-xl mt-4 pt-4 border-t-2 border-gray-400">
+                    <span>Grand Total:</span>
+                    <span id="grand-total-amount" contenteditable="true" class="text-blue-800">₹ 265.50</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Amount in Words -->
+        <div class="mb-8">
+            <p class="text-sm">Amount in Words: <span id="amount-in-words" contenteditable="true" class="font-bold">Rupees Two Hundred Sixty-Five and Fifty Paise Only</span></p>
+        </div>
+
+        <!-- Bank Details & Declaration -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-10">
+            <div>
+                <h3 class="text-lg font-bold text-gray-700 mb-2">Bank Details</h3>
+                <div class="border rounded-lg p-4 bg-gray-50 text-sm">
+                    <p>Bank Name: <span contenteditable="true">Your Bank Name</span></p>
+                    <p>Account No: <span contenteditable="true">1234567890</span></p>
+                    <p>IFSC Code: <span contenteditable="true">ABCD0001234</span></p>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-gray-700 mb-2">Declaration</h3>
+                <div class="border rounded-lg p-4 bg-gray-50 text-sm italic text-gray-600">
+                    <p contenteditable="true">We declare that this invoice shows the total amount of tax and that we have complied with the provisions of the GST Act, 2017. This is a computer generated invoice and no signature is required.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signature Section -->
+        <div class="flex justify-end mt-10">
+            <div class="text-right">
+                <p class="font-bold mb-4">For <span contenteditable="true" class="text-blue-800">[Your Business Name]</span></p>
+                <div class="w-40 h-20 border-b-2 border-gray-400 mb-2"></div>
+                <p class="text-sm text-gray-500">Authorized Signatory</p>
+            </div>
+        </div>
+
+        <!-- Print Button (non-printable) -->
+        <div class="flex justify-center mt-10 no-print">
+            <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg shadow-lg hover:bg-blue-700 transition-colors">Generate PDF / Print</button>
+        </div>
+    </div>
+
+</body>
+</html>
