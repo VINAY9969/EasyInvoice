@@ -1,90 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Invoice Generator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EasyInvoice - GST Invoice Generator</title>
   <style>
+    /* Global Styles */
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f8f9fa;
-      color: #212529;
+      font-family: 'Courier New', monospace;
+      background-color: #f0f4ff;
+      color: #222;
+      background-image: url('https://www.transparenttextures.com/patterns/sketch-lines.png');
     }
+
     header {
-      padding: 1.5rem 2rem;
-      background: #ffffff;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background-color: #4f46e5;
+      padding: 1rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      border-bottom: 2px dashed #333;
     }
+
     header h1 {
-      margin: 0;
-      font-size: 1.5rem;
-      color: #0d6efd;
+      font-family: 'Comic Sans MS', cursive;
+      color: #fff;
+      font-size: 1.8rem;
+      text-shadow: 1px 1px #000;
     }
+
     nav a {
-      margin-left: 1rem;
-      text-decoration: none;
-      color: #212529;
+      margin-left: 1.5rem;
       font-weight: bold;
+      color: #e0e7ff;
+      border-bottom: none;
+      transition: color 0.2s;
     }
+
+    nav a:hover {
+      color: #facc15;
+    }
+
+    /* Hero Section */
     .hero {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
       padding: 4rem 2rem;
-      background: linear-gradient(135deg, #0d6efd, #6610f2);
+      text-align: center;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border: 3px dashed #222;
+      margin: 2rem;
+      border-radius: 12px;
+      box-shadow: 5px 5px 0px #999;
       color: white;
+      transform: rotate(-1deg);
     }
+
     .hero h2 {
       font-size: 2.5rem;
       margin-bottom: 1rem;
+      font-family: 'Comic Sans MS', cursive;
     }
+
     .hero p {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       margin-bottom: 2rem;
+      font-style: italic;
+      color: #e0e7ff;
     }
+
     .hero button {
-      padding: 1rem 2rem;
-      font-size: 1.2rem;
-      border: none;
-      border-radius: 6px;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      background-color: #facc15;
+      border: 2px solid #333;
+      border-radius: 8px;
       cursor: pointer;
-      background: #ffc107;
-      color: #212529;
       font-weight: bold;
-      transition: background 0.3s ease;
+      box-shadow: 3px 3px 0px #999;
+      color: #111;
+      transform: rotate(2deg);
     }
+
     .hero button:hover {
-      background: #e0a800;
+      background-color: #eab308;
     }
+
+    /* Features Section */
     .features {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 2rem;
-      padding: 3rem 2rem;
-    }
-    .feature-card {
-      background: white;
-      border-radius: 12px;
       padding: 2rem;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      text-align: center;
     }
-    .feature-card h3 {
-      margin-bottom: 1rem;
-      color: #0d6efd;
-    }
-    footer {
-      background: #212529;
-      color: white;
+
+    .feature-card {
+      background: #fff;
+      border: 2px dashed #4f46e5;
+      border-radius: 12px;
       padding: 1.5rem;
       text-align: center;
+      box-shadow: 5px 5px 0px #aaa;
+      font-family: 'Comic Sans MS', cursive;
+      transition: transform 0.2s, background 0.2s;
+      transform: rotate(-1deg);
+    }
+
+    .feature-card:hover {
+      transform: rotate(0deg) scale(1.05);
+      background: #eef2ff;
+    }
+
+    .feature-card h3 {
+      margin-bottom: 0.5rem;
+      font-size: 1.3rem;
+      color: #4f46e5;
+    }
+
+    footer {
+      background: #4f46e5;
+      color: #fff;
+      text-align: center;
+      padding: 1.5rem;
+      border-top: 2px dashed #333;
       margin-top: 2rem;
+      font-family: 'Courier New', monospace;
     }
   </style>
 </head>
@@ -93,38 +132,37 @@
     <h1>EasyInvoice</h1>
     <nav>
       <a href="#features">Features</a>
-      <a href="#">Pricing</a>
-      <a href="#">Contact</a>
+      <a href="mailto:vishuluhaniwal@gmail.com">Contact</a>
     </nav>
   </header>
 
   <section class="hero">
-    <h2>Create GST Invoices in Seconds</h2>
-    <p>Generate professional, GST-compliant invoices with HSN code lookup and custom tax fields.</p>
+    <h2>Generate GST Invoices Instantly</h2>
+    <p>Create professional, GST-compliant invoices with HSN code lookup and custom tax fields. Save time and simplify billing for your business.</p>
     <button onclick="location.href='invoice.html'">Start Generating Invoice</button>
   </section>
 
   <section id="features" class="features">
     <div class="feature-card">
       <h3>GST Ready</h3>
-      <p>Add CGST, SGST, IGST, and Cess easily with custom rates.</p>
+      <p>Automatically apply CGST, SGST, IGST, and Cess with flexible rates.</p>
     </div>
     <div class="feature-card">
       <h3>HSN Code Lookup</h3>
-      <p>Automatically apply correct GST rates for items.</p>
+      <p>Check HSN codes and GST rates for every item effortlessly.</p>
     </div>
     <div class="feature-card">
-      <h3>Download as PDF</h3>
+      <h3>Download PDF</h3>
       <p>Save or share invoices instantly with your customers.</p>
     </div>
     <div class="feature-card">
       <h3>Mobile Friendly</h3>
-      <p>Generate invoices anytime, anywhere, right from your phone.</p>
+      <p>Generate invoices anywhere, anytime, directly from your phone.</p>
     </div>
   </section>
 
   <footer>
-    <p>© 2025 EasyInvoice. All rights reserved.</p>
+    <p>© 2025 EasyInvoice. All rights reserved. | Contact: <a href="mailto:vishuluhaniwal@gmail.com" style="color:#facc15; font-weight:bold;">vishuluhaniwal@gmail.com</a></p>
   </footer>
 </body>
 </html>
