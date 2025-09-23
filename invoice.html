@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Professional GST Invoice Template</title>
+    <title>GST Invoice</title>
     <!-- Tailwind CSS CDN for modern styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -45,13 +45,23 @@
             }
             body {
                 background: #fff;
+                /* Reduce font size for printing to fit more content on one page */
+                font-size: 0.75rem;
             }
             .page-break {
                 page-break-after: always;
             }
+            /* Add a class to avoid breaking inside sections */
+            .page-break-avoid {
+                page-break-inside: avoid;
+            }
             /* Hide the roundoff row on print unless the checkbox is checked */
             .print-hide-roundoff {
                 display: none !important;
+            }
+            /* Make text smaller on print to fit more on the page */
+            p, span, td, th {
+                font-size: 0.75rem;
             }
         }
         .spinner {
@@ -79,16 +89,19 @@
             <div class="text-sm text-right mt-4 sm:mt-0">
                 <p>Invoice No: <span id="invoice-no" contenteditable="true" class="font-bold text-blue-700">INV-001</span></p>
                 <p>Date: <span id="invoice-date" contenteditable="true" class="font-bold text-blue-700">14/08/2024</span></p>
-                <p>Placeholder: <input type="text" placeholder="e.g. Haryana" class="font-bold w-28 text-blue-700 text-right"></p>
+                <!-- Changed "State" back to "Placeholder" -->
+                <p>Placeholder: <input type="text" placeholder="e.g. Haryana" class="font-bold text-blue-700 text-right"></p>
             </div>
         </header>
 
         <!-- Seller & Buyer Details -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-10">
+        <!-- Reduced gap from gap-4 to gap-2 for even more compact spacing -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-8">
             <!-- Seller Details (Supplier) -->
             <div>
                 <h2 class="text-lg font-bold text-gray-700 mb-2">Seller (Supplier Details)</h2>
-                <div class="border rounded-lg p-4 bg-gray-50 text-sm">
+                <!-- Reduced padding from p-3 to p-2 -->
+                <div class="border rounded-lg p-2 bg-gray-50 text-sm">
                     <p class="font-bold text-lg mb-1" id="business-name" contenteditable="true">Your Business Name</p>
                     <p>GSTIN: <span contenteditable="true" class="text-gray-600">27AASCA2490A1Z1</span></p>
                     <p>Address: <span contenteditable="true" class="text-gray-600">123 Business Lane, City, State - 110001</span></p>
@@ -99,7 +112,8 @@
             <!-- Buyer Details (Receiver) -->
             <div>
                 <h2 class="text-lg font-bold text-gray-700 mb-2">Buyer (Receiver Details)</h2>
-                <div class="border rounded-lg p-4 bg-gray-50 text-sm">
+                <!-- Reduced padding from p-3 to p-2 -->
+                <div class="border rounded-lg p-2 bg-gray-50 text-sm">
                     <p class="font-bold text-lg mb-1" contenteditable="true">Client Business Name</p>
                     <p>GSTIN: <span contenteditable="true" class="text-gray-600">07AAACR1234F1Z9</span></p>
                     <p>Address: <span contenteditable="true" class="text-gray-600">456 Client Street, City, State - 201301</span></p>
@@ -110,22 +124,23 @@
         </div>
 
         <!-- Items Table -->
-        <div class="overflow-x-auto mb-4">
-            <table class="min-w-full text-left border-collapse">
+        <div class="mb-2">
+            <table class="min-w-full text-left border-collapse table-auto">
                 <thead>
                     <tr class="bg-gray-100 text-gray-600 text-xs font-semibold uppercase tracking-wider">
-                        <th class="p-3 border-b-2">S. No.</th>
-                        <th class="p-3 border-b-2">Item Description</th>
-                        <th class="p-3 border-b-2 text-center">HSN/SAC</th>
-                        <th class="p-3 border-b-2 text-right">Qty</th>
-                        <th class="p-3 border-b-2 text-right">Rate (₹)</th>
-                        <th class="p-3 border-b-2 text-right">Taxable Value (₹)</th>
-                        <th class="p-3 border-b-2 text-right">CGST (%)</th>
-                        <th class="p-3 border-b-2 text-right">SGST (%)</th>
-                        <th class="p-3 border-b-2 text-right">IGST (%)</th>
-                        <th class="p-3 border-b-2 text-right">Cess (%)</th>
-                        <th class="p-3 border-b-2 text-right">Total (₹)</th>
-                        <th class="p-3 border-b-2 no-print"></th>
+                        <th class="p-2 border-b-2 w-10">S. No.</th>
+                        <!-- Increased width of Item Description column by making others narrower -->
+                        <th class="p-2 border-b-2">Item Description</th>
+                        <th class="p-2 border-b-2 text-center w-20">HSN/SAC</th>
+                        <th class="p-2 border-b-2 text-right w-12">Qty</th>
+                        <th class="p-2 border-b-2 text-right w-20">Rate (₹)</th>
+                        <th class="p-2 border-b-2 text-right w-24">Taxable Value (₹)</th>
+                        <th class="p-2 border-b-2 text-right w-12">CGST (%)</th>
+                        <th class="p-2 border-b-2 text-right w-12">SGST (%)</th>
+                        <th class="p-2 border-b-2 text-right w-12">IGST (%)</th>
+                        <th class="p-2 border-b-2 text-right w-12">Cess (%)</th>
+                        <th class="p-2 border-b-2 text-right w-24">Total (₹)</th>
+                        <th class="p-2 border-b-2 no-print w-12"></th>
                     </tr>
                 </thead>
                 <tbody id="invoice-items-container">
@@ -139,37 +154,40 @@
         </div>
 
         <!-- Totals & Summary -->
-        <div class="flex justify-end mb-8">
+        <!-- Reduced mb-4 to mb-2 to make this section smaller -->
+        <div class="flex justify-end mb-2">
             <div class="w-full sm:w-1/2">
-                <div class="flex justify-between text-sm py-1">
+                <!-- Reduced py-0.5 to py-0 to make it even more compact -->
+                <div class="flex justify-between text-sm py-0">
                     <span class="text-gray-600">Subtotal:</span>
                     <span id="subtotal-amount" class="font-bold">₹ 0.00</span>
                 </div>
-                <div class="flex justify-between text-sm py-1">
+                <div class="flex justify-between text-sm py-0">
                     <span class="text-gray-600">Total CGST:</span>
                     <span id="total-cgst-amount" class="font-bold">₹ 0.00</span>
                 </div>
-                <div class="flex justify-between text-sm py-1">
+                <div class="flex justify-between text-sm py-0">
                     <span class="text-gray-600">Total SGST:</span>
                     <span id="total-sgst-amount" class="font-bold">₹ 0.00</span>
                 </div>
-                <div class="flex justify-between text-sm py-1">
+                <div class="flex justify-between text-sm py-0">
                     <span class="text-gray-600">Total IGST:</span>
                     <span id="total-igst-amount" class="font-bold">₹ 0.00</span>
                 </div>
-                <div class="flex justify-between text-sm py-1">
+                <div class="flex justify-between text-sm py-0">
                     <span class="text-gray-600">Total Cess:</span>
                     <span id="total-cess-amount" class="font-bold">₹ 0.00</span>
                 </div>
-                <!-- Round off row is now always visible on screen, but controlled for print -->
-                <div id="roundoff-row" class="flex justify-between text-sm py-1 border-t border-dashed mt-2 pt-2 items-center">
+                <!-- Reduced mt-1 pt-1 to mt-0.5 pt-0.5 -->
+                <div id="roundoff-row" class="flex justify-between text-sm py-0 border-t border-dashed mt-0.5 pt-0.5 items-center">
                     <label class="text-gray-600 flex items-center">
                         Round Off
                         <input type="checkbox" id="roundoff-checkbox" class="ml-2">
                     </label>
                     <span id="roundoff-amount" class="font-bold">₹ 0.00</span>
                 </div>
-                <div class="flex justify-between font-bold text-xl mt-4 pt-4 border-t-2 border-gray-400">
+                <!-- Reduced mt-2 pt-2 to mt-1 pt-1 -->
+                <div class="flex justify-between font-bold text-xl mt-1 pt-1 border-t-2 border-gray-400">
                     <span>Grand Total:</span>
                     <span id="grand-total-amount" class="text-blue-800">₹ 0.00</span>
                 </div>
@@ -183,7 +201,8 @@
 
         <!-- Bank Details & Declaration -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-10">
-            <div>
+            <!-- New container to keep heading with content on print -->
+            <div class="page-break-avoid">
                 <h3 class="text-lg font-bold text-gray-700 mb-2">Bank Details</h3>
                 <div class="border rounded-lg p-4 bg-gray-50 text-sm">
                     <p>Bank Name: <span contenteditable="true">Your Bank Name</span></p>
@@ -191,7 +210,8 @@
                     <p>IFSC Code: <span contenteditable="true">ABCD0001234</span></p>
                 </div>
             </div>
-            <div>
+            <!-- New container to keep heading with content on print -->
+            <div class="page-break-avoid">
                 <h3 class="text-lg font-bold text-gray-700 mb-2">Declaration</h3>
                 <div class="border rounded-lg p-4 bg-gray-50 text-sm italic text-gray-600">
                     <p contenteditable="true">We declare that this invoice shows the total amount of tax and that we have complied with the provisions of the GST Act, 2017. This is a computer generated invoice and no signature is required.</p>
@@ -306,7 +326,7 @@
                 
                 const grandTotal = rawGrandTotal + roundoff;
 
-                subtotalAmountSpan.textContent = `₹ ${subtotal.toFixed(2)}`;
+                subtotalAmountSpan.textContent = `₹ ${grandTotal.toFixed(2)}`;
                 totalCgstAmountSpan.textContent = `₹ ${totalCgst.toFixed(2)}`;
                 totalSgstAmountSpan.textContent = `₹ ${totalSgst.toFixed(2)}`;
                 totalIgstAmountSpan.textContent = `₹ ${totalIgst.toFixed(2)}`;
@@ -320,40 +340,46 @@
                 const newRow = document.createElement('tr');
                 newRow.className = "border-b text-sm";
                 newRow.innerHTML = `
-                    <td class="p-3">
+                    <td class="p-2">
                         <span class="serial-no">${invoiceItemsContainer.children.length + 1}</span>
                     </td>
-                    <td class="p-3">
+                    <td class="p-2">
                         <span contenteditable="true">Item Description</span>
                     </td>
-                    <td class="p-3 text-center">
+                    <td class="p-2 text-center">
                         <span contenteditable="true">HSN/SAC</span>
                     </td>
-                    <td class="p-3 text-right">
-                        <input type="number" value="1" min="1" class="qty w-12 text-right">
+                    <td class="p-2 text-right">
+                        <!-- Reduced width from w-12 to w-10 -->
+                        <input type="number" value="1" min="1" class="qty w-10 text-right">
                     </td>
-                    <td class="p-3 text-right">
-                        <input type="number" value="0.00" min="0" step="0.01" class="rate w-20 text-right">
+                    <td class="p-2 text-right">
+                        <!-- Reduced width from w-20 to w-16 -->
+                        <input type="number" value="0.00" min="0" step="0.01" class="rate w-16 text-right">
                     </td>
-                    <td class="p-3 text-right">
+                    <td class="p-2 text-right">
                         <span data-taxable-value>0.00</span>
                     </td>
-                    <td class="p-3 text-right">
-                        <input type="number" value="0.00" step="0.01" class="w-12 text-right" data-cgst-input>
+                    <td class="p-2 text-right">
+                        <!-- Reduced width from w-12 to w-10 -->
+                        <input type="number" value="0.00" step="0.01" class="w-10 text-right" data-cgst-input>
                     </td>
-                    <td class="p-3 text-right">
-                        <input type="number" value="0.00" step="0.01" class="w-12 text-right" data-sgst-input>
+                    <td class="p-2 text-right">
+                        <!-- Reduced width from w-12 to w-10 -->
+                        <input type="number" value="0.00" step="0.01" class="w-10 text-right" data-sgst-input>
                     </td>
-                    <td class="p-3 text-right">
-                        <input type="number" value="0.00" step="0.01" class="w-12 text-right" data-igst-input>
+                    <td class="p-2 text-right">
+                        <!-- Reduced width from w-12 to w-10 -->
+                        <input type="number" value="0.00" step="0.01" class="w-10 text-right" data-igst-input>
                     </td>
-                    <td class="p-3 text-right">
-                        <input type="number" value="0.00" step="0.01" class="w-12 text-right" data-cess-input>
+                    <td class="p-2 text-right">
+                        <!-- Reduced width from w-12 to w-10 -->
+                        <input type="number" value="0.00" step="0.01" class="w-10 text-right" data-cess-input>
                     </td>
-                    <td class="p-3 text-right font-semibold">
+                    <td class="p-2 text-right font-semibold">
                         <span data-total-value>0.00</span>
                     </td>
-                    <td class="p-3 text-center no-print">
+                    <td class="p-2 text-center no-print">
                         <button class="remove-item-btn text-red-500 hover:text-red-700 transition-colors">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd"></path></svg>
                         </button>
