@@ -1,168 +1,186 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EasyInvoice - GST Invoice Generator</title>
-  <style>
-    /* Global Styles */
-    body {
-      margin: 0;
-      font-family: 'Courier New', monospace;
-      background-color: #f0f4ff;
-      color: #222;
-      background-image: url('https://www.transparenttextures.com/patterns/sketch-lines.png');
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyInvoice - GST Invoice Generator</title>
 
-    header {
-      background-color: #4f46e5;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px dashed #333;
-    }
+    <!-- Google Fonts for the hand-drawn style -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'marker': ['Permanent Marker', 'cursive'],
+                        'mono': ['Roboto Mono', 'monospace'],
+                    },
+                    colors: {
+                        primary: '#4f46e5',
+                        accent: '#facc15',
+                        'text-dark': '#222',
+                        'text-light': '#fff',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Custom styles to maintain the unique aesthetic */
+        body {
+            background-image: url('https://www.transparenttextures.com/patterns/sketch-lines.png');
+        }
 
-    header h1 {
-      font-family: 'Comic Sans MS', cursive;
-      color: #fff;
-      font-size: 1.8rem;
-      text-shadow: 1px 1px #000;
-    }
+        .border-dashed-primary {
+            border: 2px dashed theme('colors.primary');
+        }
 
-    nav a {
-      margin-left: 1.5rem;
-      font-weight: bold;
-      color: #e0e7ff;
-      border-bottom: none;
-      transition: color 0.2s;
-    }
+        .box-shadow-hero {
+            box-shadow: 5px 5px 0px #999;
+        }
 
-    nav a:hover {
-      color: #facc15;
-    }
-
-    /* Hero Section */
-    .hero {
-      padding: 4rem 2rem;
-      text-align: center;
-      background: linear-gradient(135deg, #6366f1, #4f46e5);
-      border: 3px dashed #222;
-      margin: 2rem;
-      border-radius: 12px;
-      box-shadow: 5px 5px 0px #999;
-      color: white;
-      transform: rotate(-1deg);
-    }
-
-    .hero h2 {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-      font-family: 'Comic Sans MS', cursive;
-    }
-
-    .hero p {
-      font-size: 1.1rem;
-      margin-bottom: 2rem;
-      font-style: italic;
-      color: #e0e7ff;
-    }
-
-    .hero button {
-      padding: 0.8rem 1.5rem;
-      font-size: 1rem;
-      background-color: #facc15;
-      border: 2px solid #333;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      box-shadow: 3px 3px 0px #999;
-      color: #111;
-      transform: rotate(2deg);
-    }
-
-    .hero button:hover {
-      background-color: #eab308;
-    }
-
-    /* Features Section */
-    .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 2rem;
-      padding: 2rem;
-    }
-
-    .feature-card {
-      background: #fff;
-      border: 2px dashed #4f46e5;
-      border-radius: 12px;
-      padding: 1.5rem;
-      text-align: center;
-      box-shadow: 5px 5px 0px #aaa;
-      font-family: 'Comic Sans MS', cursive;
-      transition: transform 0.2s, background 0.2s;
-      transform: rotate(-1deg);
-    }
-
-    .feature-card:hover {
-      transform: rotate(0deg) scale(1.05);
-      background: #eef2ff;
-    }
-
-    .feature-card h3 {
-      margin-bottom: 0.5rem;
-      font-size: 1.3rem;
-      color: #4f46e5;
-    }
-
-    footer {
-      background: #4f46e5;
-      color: #fff;
-      text-align: center;
-      padding: 1.5rem;
-      border-top: 2px dashed #333;
-      margin-top: 2rem;
-      font-family: 'Courier New', monospace;
-    }
-  </style>
+        .box-shadow-card {
+            box-shadow: 5px 5px 0px #aaa;
+        }
+    </style>
 </head>
-<body>
-  <header>
-    <h1>EasyInvoice</h1>
-    <nav>
-      <a href="#features">Features</a>
-      <a href="mailto:vishuluhaniwal@gmail.com">Contact</a>
-    </nav>
-  </header>
+<body class="bg-slate-100 text-text-dark font-mono overflow-x-hidden">
+    
+    <!-- Header -->
+    <header class="bg-primary px-4 sm:px-8 py-4 flex justify-between items-center border-b-2 border-dashed border-text-dark">
+        <a href="#" class="logo text-text-light text-2xl font-marker drop-shadow-sm">EasyInvoice</a>
+        
+        <!-- Desktop Navigation -->
+        <nav class="hidden md:flex items-center space-x-6">
+            <a href="#" id="about-link-desktop" class="font-bold text-indigo-200 hover:text-accent transition-colors">About</a>
+            <a href="#features" class="font-bold text-indigo-200 hover:text-accent transition-colors">Features</a>
+            <a href="mailto:vishuluhaniwal@gmail.com" class="font-bold text-indigo-200 hover:text-accent transition-colors">Contact</a>
+        </nav>
+        
+        <!-- Mobile Menu Toggle Button -->
+        <button id="mobile-menu-toggle" class="md:hidden p-2 rounded-md focus:outline-none">
+            <svg class="w-6 h-6 fill-text-light" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+    </header>
 
-  <section class="hero">
-    <h2>Generate GST Invoices Instantly</h2>
-    <p>Create professional, GST-compliant invoices with HSN code lookup and custom tax fields. Save time and simplify billing for your business.</p>
-    <button onclick="location.href='invoice.html'">Start Generating Invoice</button>
-  </section>
+    <!-- Mobile Menu Container (hidden by default) -->
+    <div id="mobile-menu" class="mobile-menu hidden md:hidden flex-col bg-primary border-t-2 border-dashed border-indigo-200 py-4">
+        <a href="#" id="about-link-mobile" class="text-text-light py-3 px-8 border-b border-white/10">About</a>
+        <a href="#features" class="text-text-light py-3 px-8 border-b border-white/10">Features</a>
+        <a href="mailto:vishuluhaniwal@gmail.com" class="text-text-light py-3 px-8">Contact</a>
+    </div>
 
-  <section id="features" class="features">
-    <div class="feature-card">
-      <h3>GST Ready</h3>
-      <p>Automatically apply CGST, SGST, IGST, and Cess with flexible rates.</p>
-    </div>
-    <div class="feature-card">
-      <h3>HSN Code Lookup</h3>
-      <p>Check HSN codes and GST rates for every item effortlessly.</p>
-    </div>
-    <div class="feature-card">
-      <h3>Download PDF</h3>
-      <p>Save or share invoices instantly with your customers.</p>
-    </div>
-    <div class="feature-card">
-      <h3>Mobile Friendly</h3>
-      <p>Generate invoices anywhere, anytime, directly from your phone.</p>
-    </div>
-  </section>
+    <!-- Hero Section -->
+    <section class="hero p-8 mx-4 my-8 md:p-16 md:mx-8 rounded-xl text-center bg-gradient-to-br from-indigo-500 to-primary border-3 border-dashed border-text-dark box-shadow-hero rotate-[-1deg] text-text-light">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl mb-4 font-marker">Generate GST Invoices Instantly</h2>
+        <p class="text-base sm:text-lg mb-4 italic text-indigo-200">Create professional, GST-compliant invoices with custom tax fields. Save time and simplify billing for your business.</p>
+        <p class="text-sm sm:text-base mb-8">Ready to get started? Log in to save your data or generate a quick invoice without an account.</p>
+        
+        <div class="flex flex-col md:flex-row justify-center items-center gap-4">
+            <a href="login.html" class="inline-block px-6 py-3 text-base sm:text-lg bg-primary text-text-light border-2 border-accent rounded-lg font-bold shadow-md hover:bg-indigo-600 hover:scale-105 transition-transform rotate-[-2deg]">Login / Sign Up</a>
+            <a href="invoice.html" class="inline-block px-6 py-3 text-base sm:text-lg bg-accent text-gray-900 border-2 border-text-dark rounded-lg font-bold shadow-md hover:bg-yellow-400 hover:scale-105 transition-transform rotate-[2deg]">Generate Invoice (No Login)</a>
+        </div>
+    </section>
 
-  <footer>
-    <p>© 2025 EasyInvoice. All rights reserved. | Contact: <a href="mailto:vishuluhaniwal@gmail.com" style="color:#facc15; font-weight:bold;">vishuluhaniwal@gmail.com</a></p>
-  </footer>
+    <!-- Features Section -->
+    <section id="features" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 p-8">
+        <div class="feature-card bg-white p-6 rounded-xl text-center border-dashed-primary box-shadow-card rotate-[-1deg] transition-all hover:rotate-0 hover:scale-105 hover:bg-indigo-50 hover:shadow-lg">
+            <h3 class="text-xl mb-2 font-marker text-primary">Flexible GST</h3>
+            <p class="font-mono text-gray-700">Easily configure CGST, SGST, IGST, and Cess rates for each invoice, adapting to your specific needs.</p>
+        </div>
+        <div class="feature-card bg-white p-6 rounded-xl text-center border-dashed-primary box-shadow-card rotate-[1deg] transition-all hover:rotate-0 hover:scale-105 hover:bg-indigo-50 hover:shadow-lg">
+            <h3 class="text-xl mb-2 font-marker text-primary">Save & Backup</h3>
+            <p class="font-mono text-gray-700">Logged-in users can save invoices and client information for easy future access and backup.</p>
+        </div>
+        <div class="feature-card bg-white p-6 rounded-xl text-center border-dashed-primary box-shadow-card rotate-[-2deg] transition-all hover:rotate-0 hover:scale-105 hover:bg-indigo-50 hover:shadow-lg">
+            <h3 class="text-xl mb-2 font-marker text-primary">Download PDF</h3>
+            <p class="font-mono text-gray-700">Download invoices in PDF instantly for your customers.</p>
+        </div>
+        <div class="feature-card bg-white p-6 rounded-xl text-center border-dashed-primary box-shadow-card rotate-[1deg] transition-all hover:rotate-0 hover:scale-105 hover:bg-indigo-50 hover:shadow-lg">
+            <h3 class="text-xl mb-2 font-marker text-primary">Always Available</h3>
+            <p class="font-mono text-gray-700">Access the tool anytime, anywhere, without needing to remember a password or account details.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-primary text-text-light text-center p-6 border-t-2 border-dashed border-text-dark mt-8">
+        <p>© 2025 EasyInvoice. All rights reserved. | Contact: <a href="mailto:vishuluhaniwal@gmail.com" class="text-accent font-bold no-underline hover:underline transition-colors">Contact</a></p>
+    </footer>
+
+    <!-- About Me Modal -->
+    <div id="about-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-900 bg-opacity-75 backdrop-blur-sm">
+        <div class="relative bg-white p-8 rounded-xl border-dashed-primary box-shadow-card rotate-[-1deg] w-11/12 max-w-lg text-center">
+            <button id="close-modal" class="absolute top-4 right-4 text-gray-400 hover:text-text-dark transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h3 class="text-3xl font-marker text-primary mb-4">About Me</h3>
+            <p class="font-mono text-gray-700 mb-4">
+                Hello! I am a student and the creator of EasyInvoice. I built this tool to make GST invoicing simple and accessible for everyone, especially for small businesses and freelancers.
+            </p>
+            <p class="font-mono text-gray-700">
+                My goal is to provide a fast, secure, and user-friendly solution that gets the job done without any hassle. I hope you find it useful!
+            </p>
+        </div>
+    </div>
+
+    <!-- JavaScript for Mobile Menu & Modal -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const aboutModal = document.getElementById('about-modal');
+            const aboutLinkDesktop = document.getElementById('about-link-desktop');
+            const aboutLinkMobile = document.getElementById('about-link-mobile');
+            const closeModalBtn = document.getElementById('close-modal');
+
+            // Toggle mobile menu
+            mobileMenuToggle.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                mobileMenu.classList.toggle('flex');
+            });
+
+            // Show About modal
+            const showModal = () => {
+                aboutModal.classList.remove('hidden');
+                aboutModal.classList.add('flex');
+            };
+
+            // Hide About modal
+            const hideModal = () => {
+                aboutModal.classList.remove('flex');
+                aboutModal.classList.add('hidden');
+            };
+
+            // Event listeners for modal
+            aboutLinkDesktop.addEventListener('click', (e) => {
+                e.preventDefault();
+                showModal();
+            });
+
+            aboutLinkMobile.addEventListener('click', (e) => {
+                e.preventDefault();
+                hideModal(); // Hide the mobile menu first
+                showModal(); // Then show the modal
+            });
+
+            closeModalBtn.addEventListener('click', hideModal);
+
+            aboutModal.addEventListener('click', (e) => {
+                if (e.target === aboutModal) {
+                    hideModal();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
