@@ -7,10 +7,39 @@
     <!-- Tailwind CSS CDN for modern styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for hamburger and arrow icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 64px;
+            /* Default width for collapsed state (16 * 4px) */
+            transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            z-index: 50;
+        }
+        .sidebar:hover {
+            width: 250px;
+        }
+        .sidebar-menu-btn {
+            background: #4f46e5;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .invoice-content {
+            flex-grow: 1;
+            transition: margin-left 0.3s ease-in-out;
+            margin-left: 64px;
         }
         .invoice-container {
             max-width: 800px;
@@ -30,9 +59,30 @@
         input:focus, textarea:focus, [contenteditable]:focus {
             border-bottom: 1px solid #1e40af;
         }
+        /* Style for collapsible menu items */
+        .collapsible-menu-item {
+            cursor: pointer;
+        }
+        .collapsible-menu-item .fa-angle-right {
+            transition: transform 0.3s ease-in-out;
+        }
+        .collapsible-menu-item.open .fa-angle-right {
+            transform: rotate(90deg);
+        }
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        .collapsible-content.open {
+            max-height: 200px; /* Adjust as needed */
+        }
         @media print {
-            .no-print {
+            .no-print, .sidebar {
                 display: none !important;
+            }
+            .invoice-content {
+                margin-left: 0 !important;
             }
             .invoice-container {
                 box-shadow: none;
@@ -45,21 +95,17 @@
             }
             body {
                 background: #fff;
-                /* Reduce font size for printing to fit more content on one page */
                 font-size: 0.75rem;
             }
             .page-break {
                 page-break-after: always;
             }
-            /* Add a class to avoid breaking inside sections */
             .page-break-avoid {
                 page-break-inside: avoid;
             }
-            /* Hide the roundoff row on print unless the checkbox is checked */
             .print-hide-roundoff {
                 display: none !important;
             }
-            /* Make text smaller on print to fit more on the page */
             p, span, td, th {
                 font-size: 0.75rem;
             }
@@ -76,164 +122,640 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+        }
+        #auth-dropdown input {
+            border-bottom: 1px solid #d1d5db;
+            cursor: text;
+        }
+        .password-container {
+            position: relative;
+        }
+        .password-toggle {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #9ca3af;
+        }
     </style>
 </head>
-<body class="text-gray-800">
+<body class="text-gray-800 flex flex-col sm:flex-row">
 
-    <div class="invoice-container">
-        <!-- Header -->
-        <header class="flex flex-col sm:flex-row justify-between items-center mb-10">
-            <div class="flex items-center space-x-4">
-                <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">TAX INVOICE</h1>
+    <!-- Auth Button -->
+    <div class="fixed top-4 right-4 z-50 no-print">
+        <div class="relative">
+            <button id="auth-button" class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow hover:bg-indigo-700 transition-colors">
+                Login / Signup
+            </button>
+            <div id="auth-dropdown" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl z-20 p-4 border">
+                <div id="user-info" class="hidden mb-4 text-sm">
+                    <p>Logged in as: <span id="user-email" class="font-bold break-all"></span></p>
+                    <button id="logout-btn" class="mt-2 w-full bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600 transition-colors text-xs">Logout</button>
+                </div>
+                
+                <div id="auth-forms">
+                    <!-- Login Form -->
+                    <div id="login-form">
+                         <input type="email" id="email-input-login" placeholder="Email" class="w-full px-3 py-2 mb-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                         <div class="relative mb-3">
+                            <input type="password" id="password-input-login" placeholder="Password" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 pr-10">
+                            <i class="fas fa-eye password-toggle" id="password-toggle-login"></i>
+                         </div>
+                         <div class="flex space-x-2">
+                            <button id="login-btn" class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors">Login</button>
+                            <button id="signup-btn" class="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors">Sign Up</button>
+                         </div>
+                         <button id="forgot-password-link" class="text-xs text-blue-600 hover:underline mt-2 text-center w-full">Forgot Password?</button>
+                         <p id="auth-error" class="text-red-500 text-xs mt-2 h-4 text-center"></p>
+                    </div>
+
+                    <!-- Reset Password Form -->
+                    <div id="reset-password-form" class="hidden">
+                        <p class="text-sm mb-2">Enter your email to reset your password.</p>
+                        <input type="email" id="email-input-reset" placeholder="Email" class="w-full px-3 py-2 mb-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <button id="reset-password-btn" class="w-full bg-orange-500 text-white py-2 px-4 rounded hover:bg-orange-600 transition-colors">Send Reset Link</button>
+                        <button id="back-to-login-link" class="text-xs text-blue-600 hover:underline mt-2 text-center w-full">Back to Login</button>
+                        <p id="reset-info" class="text-green-600 text-xs mt-2 h-4 text-center"></p>
+                    </div>
+
+                    <div class="flex items-center my-3">
+                        <hr class="w-full border-gray-300">
+                        <span class="px-2 text-xs text-gray-500">OR</span>
+                        <hr class="w-full border-gray-300">
+                    </div>
+
+                    <button id="google-login-btn" class="w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 rounded hover:bg-gray-50 transition-colors flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="18" height="18" aria-hidden="true" class="mr-2">
+                            <path fill="#FFC107" d="M43.611 20.083h-1.611v-.083H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.153 7.961 3.039l5.657-5.657C35.237 6.053 29.918 4 24 4 12.954 4 4 12.954 4 24s8.954 20 20 20 20-8.954 20-20c0-1.341-.138-2.651-.389-3.917z"/>
+                            <path fill="#FF3D00" d="M6.306 14.691l6.571 4.817C14.655 15.104 18.961 12 24 12c3.059 0 5.842 1.153 7.961 3.039l5.657-5.657C35.237 6.053 29.918 4 24 4c-7.69 0-14.269 4.338-17.694 10.691z"/>
+                            <path fill="#4CAF50" d="M24 44c5.152 0 9.812-1.977 13.294-5.197l-6.142-5.188C29.101 35.091 26.671 36 24 36c-5.204 0-9.62-3.322-11.283-7.946l-6.563 5.061C9.538 40.225 16.227 44 24 44z"/>
+                            <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.793 2.237-2.231 4.166-4.103 5.615l6.142 5.188C39.099 35.909 44 30.686 44 24c0-1.341-.138-2.651-.389-3.917z"/>
+                        </svg>
+                        Sign in with Google
+                    </button>
+                </div>
+                 <p id="auth-success" class="text-green-600 text-xs mt-2 text-center"></p>
             </div>
-            <div class="text-sm text-right mt-4 sm:mt-0">
-                <p>Invoice No: <span id="invoice-no" contenteditable="true" class="font-bold text-blue-700">INV-001</span></p>
-                <p>Date: <span id="invoice-date" contenteditable="true" class="font-bold text-blue-700">14/08/2024</span></p>
-                <!-- Changed "State" back to "Placeholder" -->
-                <p>Placeholder: <input type="text" placeholder="e.g. Haryana" class="font-bold text-blue-700 text-right"></p>
-            </div>
-        </header>
-
-        <!-- Seller & Buyer Details -->
-        <!-- Reduced gap from gap-4 to gap-2 for even more compact spacing -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-8">
-            <!-- Seller Details (Supplier) -->
-            <div>
-                <h2 class="text-lg font-bold text-gray-700 mb-2">Seller (Supplier Details)</h2>
-                <!-- Reduced padding from p-3 to p-2 -->
-                <div class="border rounded-lg p-2 bg-gray-50 text-sm">
-                    <p class="font-bold text-lg mb-1" id="business-name" contenteditable="true">Your Business Name</p>
-                    <p>GSTIN: <span contenteditable="true" class="text-gray-600">27AASCA2490A1Z1</span></p>
-                    <p>Address: <span contenteditable="true" class="text-gray-600">123 Business Lane, City, State - 110001</span></p>
-                    <p>Phone: <span contenteditable="true" class="text-gray-600">+91 9876543210</span></p>
-                    <p>Email: <span contenteditable="true" class="text-gray-600">info@yourbusiness.com</span></p>
-                </div>
-            </div>
-            <!-- Buyer Details (Receiver) -->
-            <div>
-                <h2 class="text-lg font-bold text-gray-700 mb-2">Buyer (Receiver Details)</h2>
-                <!-- Reduced padding from p-3 to p-2 -->
-                <div class="border rounded-lg p-2 bg-gray-50 text-sm">
-                    <p class="font-bold text-lg mb-1" contenteditable="true">Client Business Name</p>
-                    <p>GSTIN: <span contenteditable="true" class="text-gray-600">07AAACR1234F1Z9</span></p>
-                    <p>Address: <span contenteditable="true" class="text-gray-600">456 Client Street, City, State - 201301</span></p>
-                    <p>Phone: <span contenteditable="true" class="text-gray-600">+91 9988776655</span></p>
-                    <p>Email: <span contenteditable="true" class="text-gray-600">client@example.com</span></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Items Table -->
-        <div class="mb-2">
-            <table class="min-w-full text-left border-collapse table-auto">
-                <thead>
-                    <tr class="bg-gray-100 text-gray-600 text-xs font-semibold uppercase tracking-wider">
-                        <th class="p-2 border-b-2 w-10">S. No.</th>
-                        <!-- Increased width of Item Description column by making others narrower -->
-                        <th class="p-2 border-b-2">Item Description</th>
-                        <th class="p-2 border-b-2 text-center w-20">HSN/SAC</th>
-                        <th class="p-2 border-b-2 text-right w-12">Qty</th>
-                        <th class="p-2 border-b-2 text-right w-20">Rate (₹)</th>
-                        <th class="p-2 border-b-2 text-right w-24">Taxable Value (₹)</th>
-                        <th class="p-2 border-b-2 text-right w-12">CGST (%)</th>
-                        <th class="p-2 border-b-2 text-right w-12">SGST (%)</th>
-                        <th class="p-2 border-b-2 text-right w-12">IGST (%)</th>
-                        <th class="p-2 border-b-2 text-right w-12">Cess (%)</th>
-                        <th class="p-2 border-b-2 text-right w-24">Total (₹)</th>
-                        <th class="p-2 border-b-2 no-print w-12"></th>
-                    </tr>
-                </thead>
-                <tbody id="invoice-items-container">
-                    <!-- Dynamic rows will be added here -->
-                </tbody>
-            </table>
-        </div>
-
-        <div class="no-print mb-8">
-            <button id="add-item-btn" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg shadow hover:bg-blue-700 transition-colors">Add Item</button>
-        </div>
-
-        <!-- Totals & Summary -->
-        <!-- Reduced mb-4 to mb-2 to make this section smaller -->
-        <div class="flex justify-end mb-2">
-            <div class="w-full sm:w-1/2">
-                <!-- Reduced py-0.5 to py-0 to make it even more compact -->
-                <div class="flex justify-between text-sm py-0">
-                    <span class="text-gray-600">Subtotal:</span>
-                    <span id="subtotal-amount" class="font-bold">₹ 0.00</span>
-                </div>
-                <div class="flex justify-between text-sm py-0">
-                    <span class="text-gray-600">Total CGST:</span>
-                    <span id="total-cgst-amount" class="font-bold">₹ 0.00</span>
-                </div>
-                <div class="flex justify-between text-sm py-0">
-                    <span class="text-gray-600">Total SGST:</span>
-                    <span id="total-sgst-amount" class="font-bold">₹ 0.00</span>
-                </div>
-                <div class="flex justify-between text-sm py-0">
-                    <span class="text-gray-600">Total IGST:</span>
-                    <span id="total-igst-amount" class="font-bold">₹ 0.00</span>
-                </div>
-                <div class="flex justify-between text-sm py-0">
-                    <span class="text-gray-600">Total Cess:</span>
-                    <span id="total-cess-amount" class="font-bold">₹ 0.00</span>
-                </div>
-                <!-- Reduced mt-1 pt-1 to mt-0.5 pt-0.5 -->
-                <div id="roundoff-row" class="flex justify-between text-sm py-0 border-t border-dashed mt-0.5 pt-0.5 items-center">
-                    <label class="text-gray-600 flex items-center">
-                        Round Off
-                        <input type="checkbox" id="roundoff-checkbox" class="ml-2">
-                    </label>
-                    <span id="roundoff-amount" class="font-bold">₹ 0.00</span>
-                </div>
-                <!-- Reduced mt-2 pt-2 to mt-1 pt-1 -->
-                <div class="flex justify-between font-bold text-xl mt-1 pt-1 border-t-2 border-gray-400">
-                    <span>Grand Total:</span>
-                    <span id="grand-total-amount" class="text-blue-800">₹ 0.00</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Amount in Words -->
-        <div class="mb-8">
-            <p class="text-sm">Amount in Words: <span id="amount-in-words" class="font-bold italic">Rupees Zero Only</span></p>
-        </div>
-
-        <!-- Bank Details & Declaration -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-10">
-            <!-- New container to keep heading with content on print -->
-            <div class="page-break-avoid">
-                <h3 class="text-lg font-bold text-gray-700 mb-2">Bank Details</h3>
-                <div class="border rounded-lg p-4 bg-gray-50 text-sm">
-                    <p>Bank Name: <span contenteditable="true">Your Bank Name</span></p>
-                    <p>Account No: <span contenteditable="true">1234567890</span></p>
-                    <p>IFSC Code: <span contenteditable="true">ABCD0001234</span></p>
-                </div>
-            </div>
-            <!-- New container to keep heading with content on print -->
-            <div class="page-break-avoid">
-                <h3 class="text-lg font-bold text-gray-700 mb-2">Declaration</h3>
-                <div class="border rounded-lg p-4 bg-gray-50 text-sm italic text-gray-600">
-                    <p contenteditable="true">We declare that this invoice shows the total amount of tax and that we have complied with the provisions of the GST Act, 2017. This is a computer generated invoice and no signature is required.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Signature Section -->
-        <div class="flex justify-end mt-10">
-            <div class="text-right">
-                <p class="font-bold mb-4">For <span contenteditable="true" class="text-blue-800">[Your Business Name]</span></p>
-                <div class="w-40 h-20 border-b-2 border-gray-400 mb-2"></div>
-                <p class="text-sm text-gray-500">Authorized Signatory</p>
-            </div>
-        </div>
-
-        <!-- Print Button (non-printable) -->
-        <div class="flex justify-center mt-10 no-print">
-            <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg shadow-lg hover:bg-blue-700 transition-colors">Generate PDF / Print</button>
         </div>
     </div>
 
+
+    <!-- Collapsible Sidebar Menu -->
+    <div id="sidebar" class="sidebar bg-gray-800 text-gray-200 flex flex-col items-center py-4 no-print">
+        <button id="menu-btn" class="p-4 rounded-full hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 mb-8">
+            <i class="fas fa-bars text-xl"></i>
+        </button>
+        <nav class="w-full px-2">
+            <ul>
+                <li id="flexible-gst-item" class="collapsible-menu-item flex items-center justify-between text-sm py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors">
+                    <span class="truncate">Flexible GST</span>
+                    <i class="fas fa-angle-right ml-2"></i>
+                </li>
+                <ul id="flexible-gst-content" class="collapsible-content space-y-2 mt-2 px-6">
+                    <li>
+                        <label class="flex items-center text-sm cursor-pointer hover:text-white">
+                            <input type="checkbox" id="cgst-checkbox" class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out mr-2">
+                            <span>CGST</span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="flex items-center text-sm cursor-pointer hover:text-white">
+                            <input type="checkbox" id="sgst-checkbox" class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out mr-2">
+                            <span>SGST</span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="flex items-center text-sm cursor-pointer hover:text-white">
+                            <input type="checkbox" id="igst-checkbox" class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out mr-2">
+                            <span>IGST</span>
+                        </label>
+                    </li>
+                    <li>
+                        <label class="flex items-center text-sm cursor-pointer hover:text-white">
+                            <input type="checkbox" id="cess-checkbox" class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out mr-2">
+                            <span>Cess</span>
+                        </label>
+                    </li>
+                </ul>
+                <li id="profiles-item" class="collapsible-menu-item flex items-center justify-between text-sm py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors mt-2">
+                    <span class="truncate">Profiles</span>
+                    <i class="fas fa-angle-right ml-2"></i>
+                </li>
+                <ul id="profiles-content" class="collapsible-content space-y-2 mt-2 px-6">
+                    <li>
+                        <h3 class="font-bold mb-2">Seller Profiles</h3>
+                        <div class="flex items-center">
+                            <select id="seller-profiles" class="w-full bg-gray-700 text-gray-200 text-sm rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="">Select a seller profile</option>
+                            </select>
+                            <button id="add-seller-btn" class="ml-2 bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded-full transition-colors"><i class="fas fa-plus"></i></button>
+                            <button id="delete-seller-btn" class="ml-1 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled><i class="fas fa-trash"></i></button>
+                        </div>
+                    </li>
+                    <li class="mt-4">
+                        <h3 class="font-bold mb-2">Buyer Profiles</h3>
+                         <div class="flex items-center">
+                            <select id="buyer-profiles" class="w-full bg-gray-700 text-gray-200 text-sm rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="">Select a buyer profile</option>
+                            </select>
+                            <button id="add-buyer-btn" class="ml-2 bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded-full transition-colors"><i class="fas fa-plus"></i></button>
+                            <button id="delete-buyer-btn" class="ml-1 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled><i class="fas fa-trash"></i></button>
+                        </div>
+                    </li>
+                </ul>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Main Invoice Content -->
+    <div class="invoice-content flex-1">
+        <div class="invoice-container">
+            <!-- Header -->
+            <header class="flex flex-col sm:flex-row justify-between items-center mb-10">
+                <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">TAX INVOICE</h1>
+                </div>
+                <div class="text-sm text-right mt-4 sm:mt-0">
+                    <p>Invoice No: <span id="invoice-no" contenteditable="true" class="font-bold text-blue-700">INV-001</span></p>
+                    <p>Date: <span id="invoice-date" contenteditable="true" class="font-bold text-blue-700">14/08/2024</span></p>
+                    <p>Placeholder: <input type="text" placeholder="e.g. Haryana" class="font-bold text-blue-700 text-right"></p>
+                </div>
+            </header>
+
+            <!-- Seller & Buyer Details -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-8">
+                <div id="seller-details">
+                    <h2 class="text-lg font-bold text-gray-700 mb-2">Seller (Supplier Details)</h2>
+                    <div class="border rounded-lg p-2 bg-gray-50 text-sm">
+                        <p class="font-bold text-lg mb-1" id="business-name" contenteditable="true">Your Business Name</p>
+                        <p>GSTIN: <span contenteditable="true" class="text-gray-600" data-field="gstin">27AASCA2490A1Z1</span></p>
+                        <p>Address: <span contenteditable="true" class="text-gray-600" data-field="address">123 Business Lane, City, State - 110001</span></p>
+                        <p>Phone: <span contenteditable="true" class="text-gray-600" data-field="phone">+91 9876543210</span></p>
+                        <p>Email: <span contenteditable="true" class="text-gray-600" data-field="email">info@yourbusiness.com</span></p>
+                    </div>
+                </div>
+                <div id="buyer-details">
+                    <h2 class="text-lg font-bold text-gray-700 mb-2">Buyer (Receiver Details)</h2>
+                    <div class="border rounded-lg p-2 bg-gray-50 text-sm">
+                        <p class="font-bold text-lg mb-1" id="client-name" contenteditable="true">Client Business Name</p>
+                        <p>GSTIN: <span contenteditable="true" class="text-gray-600" data-field="gstin">07AAACR1234F1Z9</span></p>
+                        <p>Address: <span contenteditable="true" class="text-gray-600" data-field="address">456 Client Street, City, State - 201301</span></p>
+                        <p>Phone: <span contenteditable="true" class="text-gray-600" data-field="phone">+91 9988776655</span></p>
+                        <p>Email: <span contenteditable="true" class="text-gray-600" data-field="email">client@example.com</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div class="mb-2 overflow-x-auto">
+                <table class="min-w-full text-left border-collapse table-auto">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-600 text-xs font-semibold uppercase tracking-wider">
+                            <th class="p-2 border-b-2 w-10">S. No.</th>
+                            <th class="p-2 border-b-2">Item Description</th>
+                            <th class="p-2 border-b-2 text-center w-20">HSN/SAC</th>
+                            <th class="p-2 border-b-2 text-right w-12">Qty</th>
+                            <th class="p-2 border-b-2 text-right w-20">Rate (₹)</th>
+                            <th class="p-2 border-b-2 text-right w-24">Taxable Value (₹)</th>
+                            <th class="p-2 border-b-2 text-right w-12 hidden" id="cgst-header">CGST (%)</th>
+                            <th class="p-2 border-b-2 text-right w-12 hidden" id="sgst-header">SGST (%)</th>
+                            <th class="p-2 border-b-2 text-right w-12 hidden" id="igst-header">IGST (%)</th>
+                            <th class="p-2 border-b-2 text-right w-12 hidden" id="cess-header">Cess (%)</th>
+                            <th class="p-2 border-b-2 text-right w-24">Total (₹)</th>
+                            <th class="p-2 border-b-2 no-print w-12"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoice-items-container">
+                        <!-- Dynamic rows will be added here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="no-print mb-8">
+                <button id="add-item-btn" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg shadow hover:bg-blue-700 transition-colors">Add Item</button>
+            </div>
+
+            <!-- Totals & Summary -->
+            <div class="flex justify-end mb-2">
+                <div class="w-full sm:w-1/2">
+                    <div class="flex justify-between text-sm py-0">
+                        <span class="text-gray-600">Subtotal:</span>
+                        <span id="subtotal-amount" class="font-bold">₹ 0.00</span>
+                    </div>
+                    <div class="flex justify-between text-sm py-0 hidden" id="total-cgst-row">
+                        <span class="text-gray-600">Total CGST:</span>
+                        <span id="total-cgst-amount" class="font-bold">₹ 0.00</span>
+                    </div>
+                    <div class="flex justify-between text-sm py-0 hidden" id="total-sgst-row">
+                        <span class="text-gray-600">Total SGST:</span>
+                        <span id="total-sgst-amount" class="font-bold">₹ 0.00</span>
+                    </div>
+                    <div class="flex justify-between text-sm py-0 hidden" id="total-igst-row">
+                        <span class="text-gray-600">Total IGST:</span>
+                        <span id="total-igst-amount" class="font-bold">₹ 0.00</span>
+                    </div>
+                    <div class="flex justify-between text-sm py-0 hidden" id="total-cess-row">
+                        <span class="text-gray-600">Total Cess:</span>
+                        <span id="total-cess-amount" class="font-bold">₹ 0.00</span>
+                    </div>
+                    <div id="roundoff-row" class="flex justify-between text-sm py-0 border-t border-dashed mt-0.5 pt-0.5 items-center print-hide-roundoff">
+                        <label class="text-gray-600 flex items-center">
+                            Round Off
+                            <input type="checkbox" id="roundoff-checkbox" class="ml-2">
+                        </label>
+                        <span id="roundoff-amount" class="font-bold">₹ 0.00</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-xl mt-1 pt-1 border-t-2 border-gray-400">
+                        <span>Grand Total:</span>
+                        <span id="grand-total-amount" class="text-blue-800">₹ 0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Amount in Words -->
+            <div class="mb-8">
+                <p class="text-sm">Amount in Words: <span id="amount-in-words" class="font-bold italic">Rupees Zero Only</span></p>
+            </div>
+
+            <!-- Bank Details & Declaration -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-10">
+                <div class="page-break-avoid">
+                    <h3 class="text-lg font-bold text-gray-700 mb-2">Bank Details</h3>
+                    <div class="border rounded-lg p-4 bg-gray-50 text-sm">
+                        <p>Bank Name: <span contenteditable="true">Your Bank Name</span></p>
+                        <p>Account No: <span contenteditable="true">1234567890</span></p>
+                        <p>IFSC Code: <span contenteditable="true">ABCD0001234</span></p>
+                    </div>
+                </div>
+                <div class="page-break-avoid">
+                    <h3 class="text-lg font-bold text-gray-700 mb-2">Declaration</h3>
+                    <div class="border rounded-lg p-4 bg-gray-50 text-sm italic text-gray-600">
+                        <p contenteditable="true">We declare that this invoice shows the total amount of tax and that we have complied with the provisions of the GST Act, 2017. This is a computer generated invoice and no signature is required.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Signature Section -->
+            <div class="flex justify-end mt-10">
+                <div class="text-right">
+                    <p class="font-bold mb-4">For <span contenteditable="true" class="text-blue-800">[Your Business Name]</span></p>
+                    <div class="w-40 h-20 border-b-2 border-gray-400 mb-2"></div>
+                    <p class="text-sm text-gray-500">Authorized Signatory</p>
+                </div>
+            </div>
+
+            <!-- Print Button (non-printable) -->
+            <div class="flex justify-center mt-10 no-print">
+                <button onclick="window.print()" class="bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg shadow-lg hover:bg-blue-700 transition-colors">Generate PDF / Print</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Profile Modal Popup -->
+    <div id="profile-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h2 id="modal-title" class="text-2xl font-bold mb-4">Add New Profile</h2>
+            <form id="profile-form" class="space-y-4">
+                <div>
+                    <label for="profile-name" class="block text-sm font-medium text-gray-700">Profile Name</label>
+                    <input type="text" id="profile-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" required>
+                </div>
+                <div>
+                    <label for="business-name-input" class="block text-sm font-medium text-gray-700">Business Name</label>
+                    <input type="text" id="business-name-input" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" required>
+                </div>
+                <div>
+                    <label for="gstin-input" class="block text-sm font-medium text-gray-700">GSTIN</label>
+                    <input type="text" id="gstin-input" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                </div>
+                <div>
+                    <label for="address-input" class="block text-sm font-medium text-gray-700">Address</label>
+                    <textarea id="address-input" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"></textarea>
+                </div>
+                <div>
+                    <label for="phone-input" class="block text-sm font-medium text-gray-700">Phone</label>
+                    <input type="tel" id="phone-input" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                </div>
+                <div>
+                    <label for="email-input" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="email-input" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2">
+                </div>
+                <div class="flex justify-end space-x-2 mt-4">
+                    <button type="button" id="cancel-modal-btn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        Cancel
+                    </button>
+                    <button type="submit" id="save-profile-btn" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        Save Profile
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4">Confirm Deletion</h2>
+            <p id="delete-modal-text" class="mb-6">Are you sure you want to delete this profile?</p>
+            <div class="flex justify-end space-x-2">
+                <button type="button" id="cancel-delete-btn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                    Cancel
+                </button>
+                <button type="button" id="confirm-delete-btn" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            onAuthStateChanged, 
+            signOut,
+            GoogleAuthProvider,
+            signInWithPopup,
+            signInWithRedirect,
+            getRedirectResult,
+            setPersistence,
+            browserLocalPersistence,
+            sendPasswordResetEmail,
+            sendEmailVerification
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCGjImplpOpykHzu2rxoKxZGL7VoRjGvCE",
+            authDomain: "easyinvoice-3ac97.firebaseapp.com",
+            projectId: "easyinvoice-3ac97",
+            storageBucket: "easyinvoice-3ac97.firebasestorage.app",
+            messagingSenderId: "764477868616",
+            appId: "1:764477868616:web:c461c328670f024060e67d",
+            measurementId: "G-15CLNK0NVF"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        auth.useDeviceLanguage();
+        setPersistence(auth, browserLocalPersistence).catch((e) => {
+            console.warn('Auth persistence could not be set:', e?.code || e);
+        });
+        const googleProvider = new GoogleAuthProvider();
+        googleProvider.setCustomParameters({ prompt: 'select_account' });
+        const isFileProtocol = location.protocol === 'file:';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const authButton = document.getElementById('auth-button');
+            const authDropdown = document.getElementById('auth-dropdown');
+            
+            // Forms
+            const authForms = document.getElementById('auth-forms');
+            const loginForm = document.getElementById('login-form');
+            const resetPasswordForm = document.getElementById('reset-password-form');
+            
+            // User info display
+            const userInfo = document.getElementById('user-info');
+            const userEmailSpan = document.getElementById('user-email');
+            
+            // Buttons
+            const logoutBtn = document.getElementById('logout-btn');
+            const loginBtn = document.getElementById('login-btn');
+            const signupBtn = document.getElementById('signup-btn');
+            const googleLoginBtn = document.getElementById('google-login-btn');
+            const forgotPasswordLink = document.getElementById('forgot-password-link');
+            const backToLoginLink = document.getElementById('back-to-login-link');
+            const resetPasswordBtn = document.getElementById('reset-password-btn');
+
+            // Inputs
+            const emailInputLogin = document.getElementById('email-input-login');
+            const passwordInputLogin = document.getElementById('password-input-login');
+            const emailInputReset = document.getElementById('email-input-reset');
+            
+            // Password Toggle
+            const passwordToggleLogin = document.getElementById('password-toggle-login');
+            
+            // Messages
+            const authError = document.getElementById('auth-error');
+            const authSuccess = document.getElementById('auth-success');
+            const resetInfo = document.getElementById('reset-info');
+            
+            // --- UI Interaction Logic ---
+            authButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                authDropdown.classList.toggle('hidden');
+                // Clear messages when opening
+                authError.textContent = '';
+                authSuccess.textContent = '';
+                resetInfo.textContent = '';
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!authDropdown.contains(e.target) && !authButton.contains(e.target)) {
+                    authDropdown.classList.add('hidden');
+                }
+            });
+            
+            passwordToggleLogin.addEventListener('click', () => {
+                const isPassword = passwordInputLogin.type === 'password';
+                passwordInputLogin.type = isPassword ? 'text' : 'password';
+                passwordToggleLogin.classList.toggle('fa-eye');
+                passwordToggleLogin.classList.toggle('fa-eye-slash');
+            });
+
+            forgotPasswordLink.addEventListener('click', () => {
+                loginForm.classList.add('hidden');
+                resetPasswordForm.classList.remove('hidden');
+                authError.textContent = '';
+            });
+            
+            backToLoginLink.addEventListener('click', () => {
+                resetPasswordForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+                resetInfo.textContent = '';
+            });
+
+            // --- Firebase Auth Logic ---
+            function handleAuthError(error) {
+                console.error('Authentication Error:', error.code, error.message);
+                switch (error.code) {
+                    case 'auth/popup-closed-by-user':
+                        authError.textContent = 'Sign-in was closed before completing.';
+                        break;
+                    case 'auth/cancelled-popup-request':
+                        authError.textContent = 'Another sign-in attempt is in progress.';
+                        break;
+                    case 'auth/popup-blocked':
+                        authError.textContent = 'Popup blocked. Please enable popups or try redirect sign-in.';
+                        break;
+                    case 'auth/operation-not-supported-in-this-environment':
+                        authError.textContent = 'This environment blocks popups. Using redirect sign-in...';
+                        break;
+                    case 'auth/unauthorized-domain':
+                        authError.innerHTML = 'This domain is not authorized for Google Sign-In. <br/>Add your origin (e.g., <code>localhost</code> or your site domain) to Firebase Auth Authorized Domains and ensure Google provider is enabled in Firebase Console.';
+                        break;
+                    case 'auth/account-exists-with-different-credential':
+                        authError.textContent = 'Email exists with different sign-in method. Use the correct provider.';
+                        break;
+                    case 'auth/invalid-email':
+                        authError.textContent = 'Please enter a valid email address.';
+                        break;
+                    case 'auth/user-not-found':
+                    case 'auth/wrong-password':
+                        authError.textContent = 'Invalid email or password.';
+                        break;
+                    case 'auth/email-already-in-use':
+                        authError.textContent = 'An account already exists with this email.';
+                        break;
+                    case 'auth/weak-password':
+                        authError.textContent = 'Password should be at least 6 characters.';
+                        break;
+                    default:
+                        authError.textContent = `An error occurred (${error.code || 'unknown'}). ${error.message || ''}`.trim();
+                }
+            }
+
+            // Handle redirect results (in case popup fails or we explicitly used redirect)
+            getRedirectResult(auth)
+                .then((result) => {
+                    if (result && result.user) {
+                        console.log('Logged in with Google (redirect):', result.user);
+                        authDropdown.classList.add('hidden');
+                    }
+                })
+                .catch((error) => {
+                    handleAuthError(error);
+                });
+            
+            signupBtn.addEventListener('click', async () => {
+                const email = emailInputLogin.value;
+                const password = passwordInputLogin.value;
+                authError.textContent = '';
+                authSuccess.textContent = '';
+
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await sendEmailVerification(userCredential.user);
+                    authSuccess.textContent = 'Account created! Please check your email to verify your account.';
+                    console.log('Signed up and verification email sent:', userCredential.user);
+                    setTimeout(() => authDropdown.classList.add('hidden'), 3000);
+                } catch (error) {
+                    handleAuthError(error);
+                }
+            });
+
+            loginBtn.addEventListener('click', async () => {
+                const email = emailInputLogin.value;
+                const password = passwordInputLogin.value;
+                authError.textContent = '';
+                authSuccess.textContent = '';
+                try {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    console.log('Logged in:', userCredential.user);
+                    authDropdown.classList.add('hidden');
+                } catch (error) {
+                    handleAuthError(error);
+                }
+            });
+            
+            googleLoginBtn.addEventListener('click', async () => {
+                authError.textContent = '';
+                authSuccess.textContent = '';
+                try {
+                    if (isFileProtocol) {
+                        authError.textContent = 'Google Sign-In requires running over http(s). Please open this file via a local server (e.g., VS Code Live Server) or deploy it.';
+                        return;
+                    }
+
+                    const result = await signInWithPopup(auth, googleProvider);
+                    console.log('Logged in with Google:', result.user);
+                    authDropdown.classList.add('hidden');
+                } catch (error) {
+                    if (error && (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment')) {
+                        try {
+                            authError.textContent = 'Popup blocked. Redirecting for Google Sign-In...';
+                            await signInWithRedirect(auth, googleProvider);
+                            return;
+                        } catch (redirectError) {
+                            handleAuthError(redirectError);
+                            return;
+                        }
+                    }
+                    handleAuthError(error);
+                }
+            });
+
+            resetPasswordBtn.addEventListener('click', async () => {
+                const email = emailInputReset.value;
+                resetInfo.textContent = '';
+                authError.textContent = '';
+                try {
+                    await sendPasswordResetEmail(auth, email);
+                    resetInfo.textContent = 'Password reset link sent! Check your email.';
+                } catch (error) {
+                    handleAuthError(error);
+                }
+            });
+
+            logoutBtn.addEventListener('click', async () => {
+                try {
+                    await signOut(auth);
+                    console.log('Logged out');
+                } catch (error) {
+                    console.error('Logout error:', error);
+                }
+            });
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // User is signed in
+                    authForms.classList.add('hidden');
+                    userInfo.classList.remove('hidden');
+                    userEmailSpan.textContent = user.email;
+                    authButton.textContent = 'Account';
+                } else {
+                    // User is signed out
+                    authForms.classList.remove('hidden');
+                    resetPasswordForm.classList.add('hidden');
+                    loginForm.classList.remove('hidden');
+
+                    userInfo.classList.add('hidden');
+                    userEmailSpan.textContent = '';
+                    authButton.textContent = 'Login / Signup';
+                    emailInputLogin.value = '';
+                    passwordInputLogin.value = '';
+                    authError.textContent = '';
+                    authSuccess.textContent = '';
+                    resetInfo.textContent = '';
+                }
+            });
+        });
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
@@ -250,6 +772,67 @@
             const roundoffAmountSpan = document.getElementById('roundoff-amount');
             const roundoffRow = document.getElementById('roundoff-row');
             
+            // Sidebar and GST menu elements
+            const sidebar = document.getElementById('sidebar');
+            const menuBtn = document.getElementById('menu-btn');
+            const flexibleGstItem = document.getElementById('flexible-gst-item');
+            const flexibleGstContent = document.getElementById('flexible-gst-content');
+            const invoiceContent = document.querySelector('.invoice-content');
+
+            const cgstCheckbox = document.getElementById('cgst-checkbox');
+            const sgstCheckbox = document.getElementById('sgst-checkbox');
+            const igstCheckbox = document.getElementById('igst-checkbox');
+            const cessCheckbox = document.getElementById('cess-checkbox');
+
+            const cgstHeader = document.getElementById('cgst-header');
+            const sgstHeader = document.getElementById('sgst-header');
+            const igstHeader = document.getElementById('igst-header');
+            const cessHeader = document.getElementById('cess-header');
+
+            const totalCgstRow = document.getElementById('total-cgst-row');
+            const totalSgstRow = document.getElementById('total-sgst-row');
+            const totalIgstRow = document.getElementById('total-igst-row');
+            const totalCessRow = document.getElementById('total-cess-row');
+
+            // Maps checkboxes to their corresponding headers and total rows
+            const gstElements = {
+                'cgst': { checkbox: cgstCheckbox, header: cgstHeader, totalRow: totalCgstRow, dataSelector: '[data-cgst-input]' },
+                'sgst': { checkbox: sgstCheckbox, header: sgstHeader, totalRow: totalSgstRow, dataSelector: '[data-sgst-input]' },
+                'igst': { checkbox: igstCheckbox, header: igstHeader, totalRow: totalIgstRow, dataSelector: '[data-igst-input]' },
+                'cess': { checkbox: cessCheckbox, header: cessHeader, totalRow: totalCessRow, dataSelector: '[data-cess-input]' }
+            };
+
+            // New profile elements
+            const profilesItem = document.getElementById('profiles-item');
+            const profilesContent = document.getElementById('profiles-content');
+            const sellerProfilesSelect = document.getElementById('seller-profiles');
+            const buyerProfilesSelect = document.getElementById('buyer-profiles');
+            const addSellerBtn = document.getElementById('add-seller-btn');
+            const addBuyerBtn = document.getElementById('add-buyer-btn');
+            const deleteSellerBtn = document.getElementById('delete-seller-btn');
+            const deleteBuyerBtn = document.getElementById('delete-buyer-btn');
+            const sellerDetailsDiv = document.getElementById('seller-details');
+            const buyerDetailsDiv = document.getElementById('buyer-details');
+
+            // Add Profile Modal elements
+            const profileModalOverlay = document.getElementById('profile-modal-overlay');
+            const modalTitle = document.getElementById('modal-title');
+            const profileForm = document.getElementById('profile-form');
+            const profileNameInput = document.getElementById('profile-name');
+            const businessNameInput = document.getElementById('business-name-input');
+            const gstinInput = document.getElementById('gstin-input');
+            const addressInput = document.getElementById('address-input');
+            const phoneInput = document.getElementById('phone-input');
+            const emailInput = document.getElementById('email-input');
+            const cancelModalBtn = document.getElementById('cancel-modal-btn');
+            let currentProfileType = '';
+
+            // Delete Confirmation Modal elements
+            const deleteModalOverlay = document.getElementById('delete-modal-overlay');
+            const deleteModalText = document.getElementById('delete-modal-text');
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+            const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+
             function toWords(num) {
                 const a = ['', 'one ', 'two ', 'three ', 'four ', 'five ', 'six ', 'seven ', 'eight ', 'nine ', 'ten ', 'eleven ', 'twelve ', 'thirteen ', 'fourteen ', 'fifteen ', 'sixteen ', 'seventeen ', 'eighteen ', 'nineteen '];
                 const b = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
@@ -294,28 +877,29 @@
                 
                 document.querySelectorAll('#invoice-items-container tr').forEach(row => {
                     const taxableValue = parseFloat(row.querySelector('[data-taxable-value]').textContent) || 0;
-                    
-                    const cgstRate = parseFloat(row.querySelector('[data-cgst-input]').value) || 0;
-                    const sgstRate = parseFloat(row.querySelector('[data-sgst-input]').value) || 0;
-                    const igstRate = parseFloat(row.querySelector('[data-igst-input]').value) || 0;
-                    const cessRate = parseFloat(row.querySelector('[data-cess-input]').value) || 0;
-
-                    const cgst = (taxableValue * cgstRate) / 100;
-                    const sgst = (taxableValue * sgstRate) / 100;
-                    const igst = (taxableValue * igstRate) / 100;
-                    const cess = (taxableValue * cessRate) / 100;
-
                     subtotal += taxableValue;
-                    totalCgst += cgst;
-                    totalSgst += sgst;
-                    totalIgst += igst;
-                    totalCess += cess;
+
+                    if (!row.querySelector('[data-cgst-input]').closest('td').classList.contains('hidden')) {
+                         const cgstRate = parseFloat(row.querySelector('[data-cgst-input]').value) || 0;
+                         totalCgst += (taxableValue * cgstRate) / 100;
+                    }
+                    if (!row.querySelector('[data-sgst-input]').closest('td').classList.contains('hidden')) {
+                         const sgstRate = parseFloat(row.querySelector('[data-sgst-input]').value) || 0;
+                         totalSgst += (taxableValue * sgstRate) / 100;
+                    }
+                    if (!row.querySelector('[data-igst-input]').closest('td').classList.contains('hidden')) {
+                         const igstRate = parseFloat(row.querySelector('[data-igst-input]').value) || 0;
+                         totalIgst += (taxableValue * igstRate) / 100;
+                    }
+                    if (!row.querySelector('[data-cess-input]').closest('td').classList.contains('hidden')) {
+                         const cessRate = parseFloat(row.querySelector('[data-cess-input]').value) || 0;
+                         totalCess += (taxableValue * cessRate) / 100;
+                    }
                 });
 
                 const rawGrandTotal = subtotal + totalCgst + totalSgst + totalIgst + totalCess;
                 let roundoff = 0;
 
-                // Toggle a class for print visibility based on checkbox state
                 if (roundoffCheckbox.checked) {
                     roundoffRow.classList.remove('print-hide-roundoff');
                     const roundedTotal = Math.round(rawGrandTotal);
@@ -326,7 +910,7 @@
                 
                 const grandTotal = rawGrandTotal + roundoff;
 
-                subtotalAmountSpan.textContent = `₹ ${grandTotal.toFixed(2)}`;
+                subtotalAmountSpan.textContent = `₹ ${subtotal.toFixed(2)}`;
                 totalCgstAmountSpan.textContent = `₹ ${totalCgst.toFixed(2)}`;
                 totalSgstAmountSpan.textContent = `₹ ${totalSgst.toFixed(2)}`;
                 totalIgstAmountSpan.textContent = `₹ ${totalIgst.toFixed(2)}`;
@@ -334,6 +918,36 @@
                 roundoffAmountSpan.textContent = `₹ ${roundoff.toFixed(2)}`;
                 grandTotalAmountSpan.textContent = `₹ ${grandTotal.toFixed(2)}`;
                 amountInWordsSpan.textContent = toWords(grandTotal);
+            }
+
+            function updateRowTotal(row) {
+                const qty = parseFloat(row.querySelector('.qty').value) || 0;
+                const rate = parseFloat(row.querySelector('.rate').value) || 0;
+                const taxableValue = qty * rate;
+                
+                let totalTax = 0;
+                
+                if (!row.querySelector('[data-cgst-input]').closest('td').classList.contains('hidden')) {
+                    const cgstRate = parseFloat(row.querySelector('[data-cgst-input]').value) || 0;
+                    totalTax += (taxableValue * cgstRate) / 100;
+                }
+                if (!row.querySelector('[data-sgst-input]').closest('td').classList.contains('hidden')) {
+                    const sgstRate = parseFloat(row.querySelector('[data-sgst-input]').value) || 0;
+                    totalTax += (taxableValue * sgstRate) / 100;
+                }
+                if (!row.querySelector('[data-igst-input]').closest('td').classList.contains('hidden')) {
+                    const igstRate = parseFloat(row.querySelector('[data-igst-input]').value) || 0;
+                    totalTax += (taxableValue * igstRate) / 100;
+                }
+                if (!row.querySelector('[data-cess-input]').closest('td').classList.contains('hidden')) {
+                    const cessRate = parseFloat(row.querySelector('[data-cess-input]').value) || 0;
+                    totalTax += (taxableValue * cessRate) / 100;
+                }
+                
+                row.querySelector('[data-taxable-value]').textContent = taxableValue.toFixed(2);
+                row.querySelector('[data-total-value]').textContent = (taxableValue + totalTax).toFixed(2);
+                
+                updateAllTotals();
             }
 
             function addItem(isInitial = false) {
@@ -350,30 +964,24 @@
                         <span contenteditable="true">HSN/SAC</span>
                     </td>
                     <td class="p-2 text-right">
-                        <!-- Reduced width from w-12 to w-10 -->
                         <input type="number" value="1" min="1" class="qty w-10 text-right">
                     </td>
                     <td class="p-2 text-right">
-                        <!-- Reduced width from w-20 to w-16 -->
                         <input type="number" value="0.00" min="0" step="0.01" class="rate w-16 text-right">
                     </td>
                     <td class="p-2 text-right">
                         <span data-taxable-value>0.00</span>
                     </td>
-                    <td class="p-2 text-right">
-                        <!-- Reduced width from w-12 to w-10 -->
+                    <td class="p-2 text-right gst-cell" data-gst-type="cgst">
                         <input type="number" value="0.00" step="0.01" class="w-10 text-right" data-cgst-input>
                     </td>
-                    <td class="p-2 text-right">
-                        <!-- Reduced width from w-12 to w-10 -->
+                    <td class="p-2 text-right gst-cell" data-gst-type="sgst">
                         <input type="number" value="0.00" step="0.01" class="w-10 text-right" data-sgst-input>
                     </td>
-                    <td class="p-2 text-right">
-                        <!-- Reduced width from w-12 to w-10 -->
+                    <td class="p-2 text-right gst-cell" data-gst-type="igst">
                         <input type="number" value="0.00" step="0.01" class="w-10 text-right" data-igst-input>
                     </td>
-                    <td class="p-2 text-right">
-                        <!-- Reduced width from w-12 to w-10 -->
+                    <td class="p-2 text-right gst-cell" data-gst-type="cess">
                         <input type="number" value="0.00" step="0.01" class="w-10 text-right" data-cess-input>
                     </td>
                     <td class="p-2 text-right font-semibold">
@@ -390,36 +998,25 @@
 
                 const qtyInput = newRow.querySelector('.qty');
                 const rateInput = newRow.querySelector('.rate');
-                const cgstInput = newRow.querySelector('[data-cgst-input]');
-                const sgstInput = newRow.querySelector('[data-sgst-input]');
-                const igstInput = newRow.querySelector('[data-igst-input]');
-                const cessInput = newRow.querySelector('[data-cess-input]');
                 const removeBtn = newRow.querySelector('.remove-item-btn');
+                const gstInputs = newRow.querySelectorAll('[data-cgst-input], [data-sgst-input], [data-igst-input], [data-cess-input]');
+                
+                // Set initial visibility based on checkboxes
+                for (const type in gstElements) {
+                    const gstCell = newRow.querySelector(`[data-gst-type="${type}"]`);
+                    if (!gstElements[type].checkbox.checked) {
+                        gstCell.classList.add('hidden');
+                    } else {
+                        gstCell.classList.remove('hidden');
+                    }
+                }
 
-                const updateRow = () => {
-                    const qty = parseFloat(qtyInput.value) || 0;
-                    const rate = parseFloat(rateInput.value) || 0;
-                    const cgstRate = parseFloat(cgstInput.value) || 0;
-                    const sgstRate = parseFloat(sgstInput.value) || 0;
-                    const igstRate = parseFloat(igstInput.value) || 0;
-                    const cessRate = parseFloat(cessInput.value) || 0;
-
-                    const taxableValue = qty * rate;
-                    const totalTax = (taxableValue * (cgstRate + sgstRate + igstRate + cessRate)) / 100;
-                    
-                    newRow.querySelector('[data-taxable-value]').textContent = taxableValue.toFixed(2);
-                    newRow.querySelector('[data-total-value]').textContent = (taxableValue + totalTax).toFixed(2);
-
-                    updateAllTotals();
-                };
+                const updateRow = () => updateRowTotal(newRow);
 
                 qtyInput.addEventListener('input', updateRow);
                 rateInput.addEventListener('input', updateRow);
-                cgstInput.addEventListener('input', updateRow);
-                sgstInput.addEventListener('input', updateRow);
-                igstInput.addEventListener('input', updateRow);
-                cessInput.addEventListener('input', updateRow);
-
+                gstInputs.forEach(input => input.addEventListener('input', updateRow));
+                
                 removeBtn.addEventListener('click', () => {
                     newRow.remove();
                     updateAllTotals();
@@ -434,12 +1031,243 @@
                     qtyInput.focus();
                 }
             }
-
+            
+            // Initial item row
             addItem(true);
+
+            // Add item button click listener
             addItemBtn.addEventListener('click', () => addItem(false));
+            
+            // Round off checkbox listener
             roundoffCheckbox.addEventListener('change', updateAllTotals);
-            updateAllTotals(); // Initial call to set print visibility
+
+            // Sidebar and GST menu listeners
+            let sidebarHoverTimeout;
+
+            function collapseMenu() {
+                if (flexibleGstContent.classList.contains('open')) {
+                    flexibleGstContent.classList.remove('open');
+                    flexibleGstItem.classList.remove('open');
+                }
+                if (profilesContent.classList.contains('open')) {
+                    profilesContent.classList.remove('open');
+                    profilesItem.classList.remove('open');
+                }
+            }
+            
+            menuBtn.addEventListener('click', () => {
+                 sidebar.classList.toggle('w-[250px]');
+                 invoiceContent.classList.toggle('ml-[250px]');
+                 // Collapse the inner menu if the main menu is collapsing
+                 if (!sidebar.classList.contains('w-[250px]')) {
+                     collapseMenu();
+                 }
+            });
+
+            sidebar.addEventListener('mouseenter', () => {
+                clearTimeout(sidebarHoverTimeout);
+                sidebar.classList.add('w-[250px]');
+                invoiceContent.classList.add('ml-[250px]');
+            });
+
+            sidebar.addEventListener('mouseleave', () => {
+                // Delay hiding the sidebar to allow for small mouse movements
+                sidebarHoverTimeout = setTimeout(() => {
+                    sidebar.classList.remove('w-[250px]');
+                    invoiceContent.classList.remove('ml-[250px]');
+                    collapseMenu(); // Collapse the inner menu when the main menu closes
+                }, 200);
+            });
+
+
+            flexibleGstItem.addEventListener('click', () => {
+                flexibleGstContent.classList.toggle('open');
+                flexibleGstItem.classList.toggle('open');
+            });
+            
+            profilesItem.addEventListener('click', () => {
+                profilesContent.classList.toggle('open');
+                profilesItem.classList.toggle('open');
+            });
+
+            // GST checkbox listeners
+            for (const type in gstElements) {
+                gstElements[type].checkbox.addEventListener('change', (e) => {
+                    const isChecked = e.target.checked;
+                    
+                    // Toggle header visibility
+                    gstElements[type].header.classList.toggle('hidden', !isChecked);
+                    
+                    // Toggle total row visibility
+                    gstElements[type].totalRow.classList.toggle('hidden', !isChecked);
+                    
+                    // Toggle column visibility for each item row
+                    document.querySelectorAll(`[data-gst-type="${type}"]`).forEach(cell => {
+                        cell.classList.toggle('hidden', !isChecked);
+                    });
+                    
+                    updateAllTotals();
+                });
+            }
+
+            updateAllTotals();
+
+            // Profile Management Functions
+            function getProfiles(type) {
+                try {
+                    return JSON.parse(localStorage.getItem(`${type}Profiles`)) || [];
+                } catch (e) {
+                    console.error("Failed to parse localStorage data", e);
+                    return [];
+                }
+            }
+
+            function saveProfiles(type, profiles) {
+                localStorage.setItem(`${type}Profiles`, JSON.stringify(profiles));
+                populateProfileSelect(type);
+                // Reset the delete button state
+                const deleteBtn = type === 'seller' ? deleteSellerBtn : deleteBuyerBtn;
+                deleteBtn.disabled = true;
+            }
+
+            function populateProfileSelect(type) {
+                const profiles = getProfiles(type);
+                const selectElement = type === 'seller' ? sellerProfilesSelect : buyerProfilesSelect;
+                
+                // Clear existing options
+                selectElement.innerHTML = `<option value="">Select a ${type} profile</option>`;
+
+                profiles.forEach(profile => {
+                    const option = document.createElement('option');
+                    option.value = profile.profileName;
+                    option.textContent = profile.profileName;
+                    selectElement.appendChild(option);
+                });
+            }
+
+            function loadProfile(type, profileName) {
+                if (!profileName) return;
+                
+                const profiles = getProfiles(type);
+                const profileToLoad = profiles.find(p => p.profileName === profileName);
+
+                if (profileToLoad) {
+                    const container = type === 'seller' ? sellerDetailsDiv : buyerDetailsDiv;
+                    container.querySelector(`[contenteditable]:not([data-field])`).textContent = profileToLoad.businessName;
+                    container.querySelector(`[data-field="gstin"]`).textContent = profileToLoad.gstin;
+                    container.querySelector(`[data-field="address"]`).textContent = profileToLoad.address;
+                    container.querySelector(`[data-field="phone"]`).textContent = profileToLoad.phone;
+                    container.querySelector(`[data-field="email"]`).textContent = profileToLoad.email;
+                }
+            }
+
+            // Modal event listeners
+            addSellerBtn.addEventListener('click', () => {
+                currentProfileType = 'seller';
+                modalTitle.textContent = 'Add New Seller Profile';
+                profileForm.reset();
+                profileModalOverlay.style.display = 'flex';
+            });
+            
+            addBuyerBtn.addEventListener('click', () => {
+                currentProfileType = 'buyer';
+                modalTitle.textContent = 'Add New Buyer Profile';
+                profileForm.reset();
+                profileModalOverlay.style.display = 'flex';
+            });
+
+            cancelModalBtn.addEventListener('click', () => {
+                profileModalOverlay.style.display = 'none';
+            });
+
+            profileForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const profileName = profileNameInput.value.trim();
+                const businessName = businessNameInput.value.trim();
+                const gstin = gstinInput.value.trim();
+                const address = addressInput.value.trim();
+                const phone = phoneInput.value.trim();
+                const email = emailInput.value.trim();
+
+                if (!profileName || !businessName) {
+                    return;
+                }
+
+                const newProfile = { profileName, businessName, gstin, address, phone, email };
+                const profiles = getProfiles(currentProfileType);
+                profiles.push(newProfile);
+                saveProfiles(currentProfileType, profiles);
+
+                const selectElement = currentProfileType === 'seller' ? sellerProfilesSelect : buyerProfilesSelect;
+                selectElement.value = profileName;
+
+                loadProfile(currentProfileType, profileName);
+                profileModalOverlay.style.display = 'none';
+            });
+            
+            // Event Listeners for Profiles
+            sellerProfilesSelect.addEventListener('change', (e) => {
+                loadProfile('seller', e.target.value);
+                deleteSellerBtn.disabled = !e.target.value;
+            });
+            buyerProfilesSelect.addEventListener('change', (e) => {
+                loadProfile('buyer', e.target.value);
+                deleteBuyerBtn.disabled = !e.target.value;
+            });
+
+            // Input field validation and formatting
+            gstinInput.addEventListener('input', (e) => {
+                e.target.value = e.target.value.toUpperCase();
+            });
+
+            phoneInput.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\D/g, ''); // Remove non-numeric characters
+                if (value.length > 10) {
+                    value = '+' + value;
+                }
+                e.target.value = value;
+            });
+
+            // Delete profile logic
+            deleteSellerBtn.addEventListener('click', () => {
+                const selectedProfileName = sellerProfilesSelect.value;
+                if (selectedProfileName) {
+                    deleteModalText.textContent = `Are you sure you want to delete the seller profile "${selectedProfileName}"?`;
+                    deleteModalOverlay.style.display = 'flex';
+                    confirmDeleteBtn.onclick = () => {
+                        const profiles = getProfiles('seller');
+                        const updatedProfiles = profiles.filter(p => p.profileName !== selectedProfileName);
+                        saveProfiles('seller', updatedProfiles);
+                        deleteModalOverlay.style.display = 'none';
+                    };
+                }
+            });
+
+            deleteBuyerBtn.addEventListener('click', () => {
+                const selectedProfileName = buyerProfilesSelect.value;
+                if (selectedProfileName) {
+                    deleteModalText.textContent = `Are you sure you want to delete the buyer profile "${selectedProfileName}"?`;
+                    deleteModalOverlay.style.display = 'flex';
+                    confirmDeleteBtn.onclick = () => {
+                        const profiles = getProfiles('buyer');
+                        const updatedProfiles = profiles.filter(p => p.profileName !== selectedProfileName);
+                        saveProfiles('buyer', updatedProfiles);
+                        deleteModalOverlay.style.display = 'none';
+                    };
+                }
+            });
+
+            cancelDeleteBtn.addEventListener('click', () => {
+                deleteModalOverlay.style.display = 'none';
+            });
+
+
+            // Initial population of profile dropdowns on page load
+            populateProfileSelect('seller');
+            populateProfileSelect('buyer');
         });
     </script>
 </body>
 </html>
+
